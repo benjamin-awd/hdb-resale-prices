@@ -3,3 +3,4 @@ streamlit
 folium
 altair
 streamlit-folium
+seaborn

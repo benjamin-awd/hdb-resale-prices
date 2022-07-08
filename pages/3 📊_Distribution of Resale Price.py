@@ -4,7 +4,7 @@ from streamlit_folium import st_folium
 import folium
 import altair as alt
 
-st.title("Distribution of Resale Price by Town")
+st.title("📊 Distribution of Resale Price")
 
 
 # read data

@@ -4,7 +4,7 @@ from streamlit_folium import st_folium
 import folium
 import altair as alt
 
-st.title("Price Trend")
+st.title("📈 Price Trend")
 st.write("The resale price is aggregated using the median value of each town.")
 
 data = pd.read_csv("data.csv", index_col=0)

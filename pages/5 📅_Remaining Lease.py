@@ -4,7 +4,7 @@ import altair as alt
 from streamlit_folium import st_folium
 import folium
 
-st.title("Remaining Lease")
+st.title("📅 Remaining Lease")
 
 data = pd.read_csv("data.csv", index_col=0)
 data = data.drop_duplicates().reset_index().drop("index", axis=1)

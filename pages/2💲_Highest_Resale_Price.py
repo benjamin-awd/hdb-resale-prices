@@ -4,7 +4,7 @@ from streamlit_folium import st_folium
 import folium
 import altair as alt
 
-st.title("Highest Resale Price by Town")
+st.title("💲Highest Resale Price")
 st.write("The unit with the highest resale price per town by flat type is plotted below.")
 st.write("The colour of the pins reflect whether the unit is below or above the median value. Red indicates below median while green indicates above median")
 

@@ -6,7 +6,7 @@ import altair as alt
 from PIL import Image
 
 
-st.title("Town Analysis")
+st.title("🔍 Town Analysis")
 
 #################
 ### READ DATA ###

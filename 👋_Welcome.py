@@ -9,7 +9,7 @@ range_date = earliest_date + " to " + latest_date
 
 st.title("👋 Welcome!")
 
-st.markdown("The goal of this web application is to analyse the Singapore HDB resale prices over the past one year.")
+st.markdown("The goal of this web application is to assist users in finding a suitable HDB resale flat in Singapore.")
 st.write("The data used in the analysis is from ", range_date)
 st.markdown("The data is obtained from [data.gov.sg](https://data.gov.sg/) and [OneMap](https://www.onemap.gov.sg/docs/) via their API.")
 st.markdown("Explore the different categories of analysis using the sidebar!")

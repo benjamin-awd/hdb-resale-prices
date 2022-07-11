@@ -6,6 +6,7 @@ import folium
 
 st.title("📅 Remaining Lease")
 
+st.write("Find out the relationship of resale prices and remaining lease years in the various towns and flat type")
 data = pd.read_csv("data.csv", index_col=0)
 data = data.drop_duplicates().reset_index().drop("index", axis=1)
 data["remaining_lease_years"] = data["remaining_lease"].apply(lambda x: float(x.split("years")[0]))

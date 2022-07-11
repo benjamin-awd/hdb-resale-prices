@@ -41,9 +41,9 @@ for lat, lon, address, town, price, lease, level in zip(highest_price_filtered["
     price_rounded = "$" + str(round(price))
     # pin colour
     if price > median_price:
-        color = "green"
-    else:
         color = "red"
+    else:
+        color = "green"
     
     # html for popup
     html = f"""
@@ -71,7 +71,7 @@ st_data = st_folium(sg_map, width=1000)
 ##########################
 ### BAR CHART PLOTTING ###
 ##########################
-colors = ['#71af26', '#d53e2a']
+colors = ['#d53e2a', '#71af26']
 domain = ["Above", "Below"]
 chart = (alt.Chart(highest_price_filtered)
     .mark_bar()

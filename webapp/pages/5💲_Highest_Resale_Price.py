@@ -1,6 +1,6 @@
 import altair as alt
 import folium
-import pandas as pd
+import polars as pl
 import streamlit as st
 from streamlit_folium import st_folium
 
@@ -15,15 +15,11 @@ st.write(
 )
 
 # read data
-data = get_dataframe()
-data = data.drop_duplicates().reset_index().drop("index", axis=1)
-data["remaining_lease_years"] = data["remaining_lease"].apply(
-    lambda x: x.split("years")[0]
-)
-
+df = get_dataframe()
 # get highest price flat by town
-highest_price = data.loc[data.groupby(["town", "flat_type"])["resale_price"].idxmax()]
-highest_price = highest_price.reset_index().drop("index", axis=1)
+highest_price = df.filter(
+    pl.col("resale_price") == pl.col("resale_price").max().over(["town", "flat_type"])
+)
 
 # flat type data
 option_flat = st.selectbox(
@@ -32,8 +28,7 @@ option_flat = st.selectbox(
 )
 
 # filter to get data from chosen flat type
-highest_price_filtered = highest_price[highest_price["flat_type"] == option_flat]
-highest_price_filtered = highest_price_filtered.reset_index().drop("index", axis=1)
+highest_price_filtered = highest_price.filter(pl.col("flat_type") == option_flat)
 
 ####################
 ### MAP PLOTTING ###
@@ -41,9 +36,12 @@ highest_price_filtered = highest_price_filtered.reset_index().drop("index", axis
 # categorise pin color
 median_price = highest_price_filtered["resale_price"].median()
 st.write("Median value is ", median_price)
-highest_price_filtered["median_category"] = highest_price_filtered[
-    "resale_price"
-].apply(lambda x: "Above" if x > median_price else "Below")
+highest_price_filtered = highest_price_filtered.with_columns(
+    pl.when(pl.col("resale_price") > median_price)
+    .then(pl.lit("Above"))
+    .otherwise(pl.lit("Below"))
+    .alias("median_category")
+)
 # plot map
 latitude = 1.3521
 longitude = 103.8198
@@ -87,8 +85,19 @@ for lat, lon, address, town, price, lease, level in zip(
         [lat, lon], popup=popup, icon=folium.Icon(color=color, icon="home", prefix="fa")
     ).add_to(sg_map)
 
-sw = highest_price_filtered[["latitude", "longitude"]].min().values.tolist()
-ne = highest_price_filtered[["latitude", "longitude"]].max().values.tolist()
+sw = (
+    highest_price_filtered.select([pl.col("latitude").min(), pl.col("longitude").min()])
+    .to_numpy()
+    .flatten()
+    .tolist()
+)
+
+ne = (
+    highest_price_filtered.select([pl.col("latitude").max(), pl.col("longitude").max()])
+    .to_numpy()
+    .flatten()
+    .tolist()
+)
 
 sg_map.fit_bounds([sw, ne])
 

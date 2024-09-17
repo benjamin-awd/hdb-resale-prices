@@ -1,4 +1,5 @@
 import altair as alt
+import polars as pl
 import streamlit as st
 
 from webapp.read import get_dataframe
@@ -6,28 +7,33 @@ from webapp.read import get_dataframe
 st.title("📈 Price Trend")
 st.write("The resale price is aggregated using the median value of each town.")
 
-data = get_dataframe()
-data = data.drop_duplicates().reset_index().drop("index", axis=1)
+df = get_dataframe()
+
 option_flat = st.selectbox(
     "Select a flat type",
     ("2 ROOM", "3 ROOM", "4 ROOM", "5 ROOM", "EXECUTIVE", "MULTI-GENERATION"),
 )
 
-data_flat = data[data["flat_type"] == option_flat]
-town_filter = list(data_flat["town"].unique())
+data_flat = df.filter(pl.col("flat_type") == option_flat)
+
+town_filter = sorted((data_flat["town"].unique()))
 option_town = st.multiselect(
     "Select multiple towns to compare",
     options=sorted(town_filter, key=str.lower),
     default=town_filter[0],
 )
 
-filtered = data_flat[data_flat["town"].isin(option_town)]
-town_group = filtered.groupby(["town", "month"])["resale_price"].median().reset_index()
+filtered = data_flat.filter(pl.col("town").is_in(option_town))
+town_group = (
+    filtered.group_by(["town", "month"])
+    .agg(pl.median("resale_price").alias("resale_price"))
+    .sort(["town", "month"])
+)
 #######################
 ### PLOT LINE CHART ###
 #######################
-nearest = alt.selection(
-    type="single", nearest=True, on="mouseover", fields=["month"], empty="none"
+nearest = alt.selection_point(
+    nearest=True, on="mouseover", fields=["month"], empty="none"
 )
 
 line = (
@@ -42,7 +48,7 @@ selectors = (
         x="month:O",
         opacity=alt.value(0),
     )
-    .add_selection(nearest)
+    .add_params(nearest)
 )
 points = line.mark_point().encode(
     opacity=alt.condition(nearest, alt.value(1), alt.value(0))

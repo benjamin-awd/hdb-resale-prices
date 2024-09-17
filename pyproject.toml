@@ -17,10 +17,8 @@ altair = "^5.4.1"
 streamlit-folium = "^0.22.0"
 seaborn = "^0.13.2"
 tqdm = "^4.66.5"
+polars = "^1.7.1"
 
-
-[tool.poetry.group.dev.dependencies]
-ipykernel = "^6.29.5"
 
 [tool.poetry.scripts]
 extract = "scripts.extract:main"

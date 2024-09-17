@@ -1,5 +1,5 @@
 import folium
-import pandas as pd
+import polars as pl
 import streamlit as st
 from PIL import Image
 from streamlit_folium import st_folium
@@ -12,11 +12,7 @@ st.write("Look for your potential units by using the filters here!")
 #################
 ### READ DATA ###
 #################
-data = get_dataframe()
-data = data.drop_duplicates().reset_index().drop("index", axis=1)
-data["remaining_lease_years"] = data["remaining_lease"].apply(
-    lambda x: int(x.split("years")[0])
-)
+df = get_dataframe()
 
 ##################
 ### SELECTIONS ###
@@ -26,57 +22,35 @@ option_flat = st.selectbox(
     "Select a flat type",
     ("2 ROOM", "3 ROOM", "4 ROOM", "5 ROOM", "EXECUTIVE", "MULTI-GENERATION"),
 )
-data_flat = data[data["flat_type"] == option_flat]
+data_flat = df.filter(pl.col("flat_type") == option_flat)
 
 # filter town
 town_filter = list(data_flat["town"].unique())
 option_town = st.selectbox("Select a town", options=sorted(town_filter, key=str.lower))
-filtered = data_flat[data_flat["town"] == option_town]
-
-# create category for resale price
-labels = ["Low", "Medium", "High"]
-
-filtered["cat_resale_price"] = pd.qcut(
-    filtered["resale_price"], [0, 0.4, 0.6, 1], labels=labels
-)
-cat_resale_price = pd.DataFrame(
-    pd.qcut(filtered["resale_price"], [0, 0.4, 0.6, 1]).value_counts().reset_index()
-)
-cat_resale_price["index"] = cat_resale_price.index.astype(str)
-cat_resale_price = (
-    cat_resale_price.sort_values("index", ascending=True)
-    .reset_index()
-    .drop(["level_0", "resale_price"], axis=1)
-)
-cat_resale_price = cat_resale_price.rename(columns={"index": "Resale Price"})
-cat_resale_price["Resale Price"] = cat_resale_price["Resale Price"].apply(
-    lambda x: x.strip("()[]")
-)
-cat_resale_price["Resale Price"] = cat_resale_price["Resale Price"].apply(
-    lambda x: x.replace(",", " to")
+filtered = df.filter(
+    (pl.col("town") == option_town) & (pl.col("flat_type") == option_flat)
 )
 
-
-# set remaining lease
-def convert_lease(x):
-    if 0 < x <= 60:
-        result = "0-60 years"
-    elif 60 < x <= 80:
-        result = "61-80 years"
-    elif 80 < x <= 99:
-        result = "81-99 years"
-    return result
-
-
-filtered["cat_remaining_lease_years"] = filtered["remaining_lease_years"].apply(
-    convert_lease
+filtered = filtered.with_columns(
+    pl.col("resale_price")
+    .qcut(3, labels=["Low", "Medium", "High"])
+    .alias("cat_resale_price")
 )
+
+# Count the occurrences of each bin
+cat_resale_price = df.group_by("resale_price").agg(pl.len().alias("count"))
+cat_resale_price = cat_resale_price.rename({"resale_price": "Resale Price"})
+
+cat_resale_price = cat_resale_price.with_columns(
+    pl.col("Resale Price").cast(pl.Utf8).str.strip_chars("()[]").replace(",", " to")
+)
+
 select_lease = st.selectbox(
     "Select remaining lease years",
     sorted(list(filtered["cat_remaining_lease_years"].unique())),
 )
 
-filtered = filtered[filtered["cat_remaining_lease_years"] == select_lease]
+filtered = filtered.filter(pl.col("cat_remaining_lease_years") == select_lease)
 
 # set slider range for resale price
 min_value = int(filtered["resale_price"].min())
@@ -95,10 +69,10 @@ select_range = st.slider(
 ### MAP PLOTTING ###
 ####################
 # filter selection according to range
-filtered_sub = filtered[
-    (filtered["resale_price"] >= select_range[0])
-    & (filtered["resale_price"] <= select_range[1])
-]
+filtered_sub = filtered.filter(
+    (pl.col("resale_price") >= select_range[0])
+    & (pl.col("resale_price") <= select_range[1])
+)
 
 # st.write("**Low (<40th percentile):**", cat_resale_price['Resale Price'][0])
 # st.write("**Medium (40th to 60th percentile):**", cat_resale_price['Resale Price'][1])
@@ -146,11 +120,25 @@ for lat, lon, address, town, price, lease, level, cat_resale_price in zip(
 
     popup = folium.Popup(html, max_width=170)
     folium.Marker(
-        [lat, lon], popup=popup, icon=folium.Icon(color=color, icon="home", prefix="fa")
+        [lat, lon],
+        popup=popup,
+        icon=folium.Icon(color=color, icon="home", prefix="fa"),
+        tooltip=html,
     ).add_to(sg_map)
 
-sw = filtered[["latitude", "longitude"]].min().values.tolist()
-ne = filtered[["latitude", "longitude"]].max().values.tolist()
+sw = (
+    filtered.select([pl.col("latitude").min(), pl.col("longitude").min()])
+    .to_numpy()
+    .flatten()
+    .tolist()
+)
+
+ne = (
+    filtered.select([pl.col("latitude").max(), pl.col("longitude").max()])
+    .to_numpy()
+    .flatten()
+    .tolist()
+)
 
 sg_map.fit_bounds([sw, ne])
 
@@ -158,15 +146,14 @@ image = Image.open("assets/resale_price_legends.png")
 
 st.image(image)
 
-st_data = st_folium(sg_map, width=1000)
+st_data = st_folium(sg_map, width=1000, use_container_width=True)
 
 
 ########################
 ###  DOWNLOAD DATA  ####
 ########################
-@st.cache
-def convert_df(df):
-    return df.to_csv().encode("utf-8")
+def convert_df(df: pl.DataFrame):
+    return df.write_csv().encode("utf-8")
 
 
 csv = convert_df(filtered_sub)

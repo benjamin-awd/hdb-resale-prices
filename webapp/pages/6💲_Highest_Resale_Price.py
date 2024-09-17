@@ -4,6 +4,8 @@ import pandas as pd
 import streamlit as st
 from streamlit_folium import st_folium
 
+from webapp.read import get_dataframe
+
 st.title("💲Highest Resale Price")
 st.write(
     "The unit with the highest resale price per town by flat type is plotted below."
@@ -13,7 +15,7 @@ st.write(
 )
 
 # read data
-data = pd.read_csv("data.csv", index_col=0)
+data = get_dataframe()
 data = data.drop_duplicates().reset_index().drop("index", axis=1)
 data["remaining_lease_years"] = data["remaining_lease"].apply(
     lambda x: x.split("years")[0]

@@ -1,9 +1,10 @@
-import altair as alt
 import folium
 import pandas as pd
 import streamlit as st
 from PIL import Image
 from streamlit_folium import st_folium
+
+from webapp.read import get_dataframe
 
 st.title("🔍 Town Analysis")
 
@@ -11,7 +12,7 @@ st.write("Look for your potential units by using the filters here!")
 #################
 ### READ DATA ###
 #################
-data = pd.read_csv("data.csv", index_col=0)
+data = get_dataframe()
 data = data.drop_duplicates().reset_index().drop("index", axis=1)
 data["remaining_lease_years"] = data["remaining_lease"].apply(
     lambda x: int(x.split("years")[0])

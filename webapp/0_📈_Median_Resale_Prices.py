@@ -55,7 +55,6 @@ chart_df = (
     .sort(["cat_remaining_lease_years", "month"])
 )
 
-# Calculate percentage increase over time
 chart_df = chart_df.with_columns(
     (
         (
@@ -67,7 +66,6 @@ chart_df = chart_df.with_columns(
     ).alias("percentage_change")
 )
 
-# Create line chart with Plotly Express
 fig = px.line(
     chart_df,
     x="month",

@@ -39,7 +39,7 @@ def get_data(start_date="2019-01", end_date=pd.Timestamp.now().strftime("%Y-%m")
 
 def fetch_map_data(query_address, session: requests.Session):
     query_string = (
-        f"https://www.onemap.gov.sg/api/common/elastic/search?&searchVal="
+        "https://www.onemap.gov.sg/api/common/elastic/search?&searchVal="
         + str(query_address)
         + "&returnGeom=Y&getAddrDetails=Y"
     )

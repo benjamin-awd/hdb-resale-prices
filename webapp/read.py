@@ -2,7 +2,6 @@ from functools import cache
 from pathlib import Path
 
 import polars as pl
-from pandas import DataFrame, concat, read_csv
 
 from webapp.utils import get_project_root
 

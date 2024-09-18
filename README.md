@@ -14,7 +14,7 @@ Looking at the distribution of resale prices is a great way to determine the aff
 ![distribution](https://user-images.githubusercontent.com/53141849/178406716-e1ac2cf8-c78d-4275-a1f8-ea15d9a1b077.gif)
 
 ### 2. Remaining Lease
-Users can find out the relationship between the resale prices and the remaining lease years. 
+Users can find out the relationship between the resale prices and the remaining lease years.
 
 ![remaining_lease](https://user-images.githubusercontent.com/53141849/178408686-9e161fa1-44c2-4408-9ea6-1a85b1e69869.gif)
 
@@ -30,6 +30,3 @@ After users have decided on the town, remaining lease and price range they are c
 ### 5. Highest Resale Price
 
 ![highest](https://user-images.githubusercontent.com/53141849/178409098-7287a98b-2050-400b-9ede-3e82ba56256f.gif)
-
-
-

@@ -2,11 +2,11 @@ import plotly.express as px
 import polars as pl
 import streamlit as st
 
-from webapp.read import get_dataframe
+from webapp.read import load_dataframe
 
 st.title("📈 Median Resale Prices")
 
-df = get_dataframe()
+df = load_dataframe()
 
 df = df.with_columns(pl.col("month").str.strptime(pl.Date, "%Y-%m"))
 

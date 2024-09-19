@@ -2,12 +2,12 @@ import altair as alt
 import polars as pl
 import streamlit as st
 
-from webapp.read import get_dataframe
+from webapp.read import load_dataframe
 
 st.title("📈 Price Trend")
 st.write("The resale price is aggregated using the median value of each town.")
 
-df = get_dataframe()
+df = load_dataframe()
 
 option_flat = st.selectbox(
     "Select a flat type",

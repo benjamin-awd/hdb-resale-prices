@@ -16,10 +16,15 @@ def convert_lease(x):
     return result
 
 
-@cache
 def get_dataframe() -> pl.DataFrame:
     """Combine all CSV files in the specified directory into a single DataFrame."""
     data_dir: Path = get_project_root() / "data"
 
     df = pl.read_parquet(data_dir / "*.parquet")
     return df
+
+
+@cache
+def load_dataframe() -> pl.DataFrame:
+    """Wrapper for get_dataframe that provides a cache"""
+    return get_dataframe()

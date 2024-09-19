@@ -2,14 +2,14 @@ import altair as alt
 import polars as pl
 import streamlit as st
 
-from webapp.read import get_dataframe
+from webapp.read import load_dataframe
 
 st.title("📅 Remaining Lease")
 
 st.write(
     "Find out the relationship of resale prices and remaining lease years in the various towns and flat type"
 )
-df = get_dataframe()
+df = load_dataframe()
 
 option_flat = st.selectbox(
     "Select a flat type",

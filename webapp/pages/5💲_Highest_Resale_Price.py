@@ -4,7 +4,7 @@ import polars as pl
 import streamlit as st
 from streamlit_folium import st_folium
 
-from webapp.read import get_dataframe
+from webapp.read import load_dataframe
 
 st.title("💲Highest Resale Price")
 st.write(
@@ -15,7 +15,7 @@ st.write(
 )
 
 # read data
-df = get_dataframe()
+df = load_dataframe()
 # get highest price flat by town
 highest_price = df.filter(
     pl.col("resale_price") == pl.col("resale_price").max().over(["town", "flat_type"])

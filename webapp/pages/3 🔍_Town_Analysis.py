@@ -4,7 +4,7 @@ import streamlit as st
 from PIL import Image
 from streamlit_folium import st_folium
 
-from webapp.read import get_dataframe
+from webapp.read import load_dataframe
 
 st.title("🔍 Town Analysis")
 
@@ -12,7 +12,7 @@ st.write("Look for your potential units by using the filters here!")
 #################
 ### READ DATA ###
 #################
-df = get_dataframe()
+df = load_dataframe()
 
 ##################
 ### SELECTIONS ###

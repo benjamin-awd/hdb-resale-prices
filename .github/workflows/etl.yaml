@@ -1,0 +1,55 @@
+name: Auto-update
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: main
+
+    - name: Install dependencies
+      uses: ./.github/actions/setup-python-poetry
+      with:
+        python-version: "3.12"
+        poetry-version: "1.8.3"
+        poetry-install-args: --without dev
+
+    - name: Run ETL Process
+      id: etl
+      run: |
+        source .venv/bin/activate
+        python webapp/etl.py
+      continue-on-error: true
+
+    - name: Check for changes in data/*.csv
+      id: check_changes
+      run: |
+        changes=$(git diff --name-only | grep '^data/.*\.csv$') || true
+        untracked=$(git ls-files --others --exclude-standard | grep '^data/.*\.csv$') || true
+
+        if [ -n "$changes" ] || [ -n "$untracked" ]; then
+          echo "has_changes=true" >> $GITHUB_ENV
+        else
+          echo "has_changes=false" >> $GITHUB_ENV
+        fi
+
+    - name: Commit and push changes
+      if: env.has_changes == 'true'
+      run: |
+        git config user.name 'GitHub Actions'
+        git config user.email 'actions@github.com'
+
+        git fetch origin
+
+        git add data
+        git commit -m "chore: update data"
+        git status
+        git push

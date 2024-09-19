@@ -142,6 +142,14 @@ def process_month(month: str, data_dir: Path, should_process: bool = False):
     final_data.to_csv(file_path, index=False)
 
 
+def get_timestamps() -> tuple[str, str]:
+    current_timestamp = datetime.now()
+    current_month = current_timestamp.strftime("%Y-%m")
+    last_month = (datetime.now() - relativedelta(months=1)).strftime("%Y-%m")
+
+    return last_month, current_month
+
+
 def extract(raw_args=None):
     parser = ArgumentParser(description="Fetch HDB and map data.")
     parser.add_argument("start_date", type=str, help="Start date in YYYY-MM format")
@@ -154,15 +162,12 @@ def extract(raw_args=None):
 
     start_date = pd.to_datetime(args.start_date, format="%Y-%m")
     end_date = pd.to_datetime(args.end_date, format="%Y-%m")
-    current_timestamp = datetime.now()
-    current_month = current_timestamp.strftime("%Y-%m")
-    last_month = (datetime.now() - relativedelta(months=1)).strftime("%Y-%m")
-
     months = (
         pd.date_range(start=start_date, end=end_date, freq="MS")
         .strftime("%Y-%m")
         .tolist()
     )
+    last_month, current_month = get_timestamps()
 
     for month in months:
         should_process = args.force or month in (last_month, current_month)

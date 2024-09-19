@@ -1,10 +1,12 @@
 from argparse import ArgumentParser
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
 
 import pandas as pd
 import requests
+from dateutil.relativedelta import relativedelta
 from tqdm import tqdm
 
 
@@ -77,9 +79,9 @@ def load_existing_data(file_path: Path) -> pd.DataFrame:
     return pd.DataFrame()
 
 
-def should_process(file_path: Path, is_current_month: bool) -> bool:
+def skip_process(file_path: Path, should_process: bool) -> bool:
     """Determine if the file should be processed based on its existence and if it's the current month."""
-    if file_path.exists() and not is_current_month:
+    if file_path.exists() and not should_process:
         print(f"File {file_path} exists and is not the current month. Skipping.")
         return False
     return True
@@ -100,11 +102,11 @@ def process_new_addresses(
     return addresses_to_process.merge(map_data, how="left", on="address")
 
 
-def process_month(month: str, data_dir: Path, is_current_month: bool):
+def process_month(month: str, data_dir: Path, should_process: bool = False):
     """Process and save data for a given month."""
     file_path = data_dir / f"{month}.csv"
 
-    if not should_process(file_path, is_current_month):
+    if not skip_process(file_path, should_process):
         return
 
     new_data = get_data(start_date=month, end_date=month)
@@ -131,24 +133,30 @@ def process_month(month: str, data_dir: Path, is_current_month: bool):
 
         print(f"Processing complete for {month}")
 
-    final_data = pd.concat([existing_data, new_data], ignore_index=True)
+    final_data = pd.concat(
+        [existing_data, new_data if not new_data.empty else None], ignore_index=True
+    )
 
     print(f"Total number of observations for {month}: {final_data.shape[0]}")
+    final_data.sort_values(by="_id", ascending=False)
     final_data.to_csv(file_path, index=False)
 
 
-def main():
+def extract(raw_args=None):
     parser = ArgumentParser(description="Fetch HDB and map data.")
     parser.add_argument("start_date", type=str, help="Start date in YYYY-MM format")
     parser.add_argument("end_date", type=str, help="End date in YYYY-MM format")
-    args = parser.parse_args()
+    parser.add_argument("-f", "--force", action="store_true")
+    args = parser.parse_args(raw_args)
 
     data_dir = Path("data")
     data_dir.mkdir(exist_ok=True)
 
     start_date = pd.to_datetime(args.start_date, format="%Y-%m")
     end_date = pd.to_datetime(args.end_date, format="%Y-%m")
-    current_month = pd.Timestamp.now().strftime("%Y-%m")
+    current_timestamp = datetime.now()
+    current_month = current_timestamp.strftime("%Y-%m")
+    last_month = (datetime.now() - relativedelta(months=1)).strftime("%Y-%m")
 
     months = (
         pd.date_range(start=start_date, end=end_date, freq="MS")
@@ -157,6 +165,7 @@ def main():
     )
 
     for month in months:
-        process_month(month, data_dir, month == current_month)
+        should_process = args.force or month in (last_month, current_month)
+        process_month(month, data_dir, should_process)
 
     return None

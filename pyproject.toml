@@ -19,6 +19,7 @@ seaborn = "^0.13.2"
 tqdm = "^4.66.5"
 polars = "^1.7.1"
 plotly = "^5.24.1"
+python-dateutil = "^2.9.0.post0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.0"
@@ -26,7 +27,7 @@ isort = "^5.13.2"
 pylint = "^3.1.0"
 
 [tool.poetry.scripts]
-extract = "scripts.extract:main"
+extract = "webapp.extract:extract"
 
 [build-system]
 requires = ["poetry-core"]

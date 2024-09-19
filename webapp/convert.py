@@ -2,6 +2,7 @@ from pathlib import Path
 
 import polars as pl
 
+from webapp.read import schema
 from webapp.utils import get_project_root
 
 
@@ -18,25 +19,6 @@ def convert_lease(x):
 def csv_to_parquet() -> pl.DataFrame:
     """Combine all CSV files in the specified directory into a single parquet file"""
     data_dir: Path = get_project_root() / "data"
-
-    schema = {
-        "_id": pl.Int64,
-        "month": pl.Utf8,
-        "town": pl.Utf8,
-        "flat_type": pl.Utf8,
-        "block": pl.Utf8,
-        "street_name": pl.Utf8,
-        "storey_range": pl.Utf8,
-        "floor_area_sqm": pl.Float32,
-        "flat_model": pl.Utf8,
-        "lease_commence_date": pl.Int16,
-        "remaining_lease": pl.Utf8,
-        "resale_price": pl.Float32,
-        "address": pl.Utf8,
-        "postal": pl.Int32,
-        "latitude": pl.Float32,
-        "longitude": pl.Float32,
-    }
 
     df = pl.read_csv(data_dir / "*.csv", schema=schema, null_values="NIL")
 
@@ -56,7 +38,7 @@ def csv_to_parquet() -> pl.DataFrame:
     )
 
     df = df.unique()
-    df = df.sort(by="month")
+    df = df.sort(by="_id")
     df.write_parquet(data_dir / "df.parquet")
     return
 

@@ -13,7 +13,7 @@ st.write(
 )
 df = load_dataframe()
 
-sf = SidebarFilter(df, select_towns=(False, ""))
+sf = SidebarFilter(df, select_towns=(False, ""), default_flat_type="4 ROOM")
 
 # Generate a rainbow color palette
 towns = sf.df["town"].unique()

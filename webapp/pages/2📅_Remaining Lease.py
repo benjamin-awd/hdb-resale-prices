@@ -1,7 +1,7 @@
 import altair as alt
-import polars as pl
 import streamlit as st
 
+from webapp.filter import SidebarFilter
 from webapp.read import load_dataframe
 
 st.set_page_config(layout="wide")
@@ -12,26 +12,11 @@ st.write(
     "Find out the relationship of resale prices and remaining lease years in the various towns and flat type"
 )
 df = load_dataframe()
-
-option_flat = st.selectbox(
-    "Select a flat type",
-    ("2 ROOM", "3 ROOM", "4 ROOM", "5 ROOM", "EXECUTIVE", "MULTI-GENERATION"),
-)
-
-filtered = df.filter(pl.col("flat_type") == option_flat)
-
-town_filter = list(df["town"].unique())
-option_town = st.selectbox("Select a town", options=sorted(town_filter, key=str.lower))
-
-filtered = filtered.filter(pl.col("town") == option_town)
-
-####################
-### SCATTER PLOT ###
-####################
+sf = SidebarFilter(df, select_lease_years=False, default_flat_type="4 ROOM")
 
 brush = alt.selection_interval()
 points = (
-    alt.Chart(filtered)
+    alt.Chart(sf.df)
     .mark_point()
     .encode(
         x="remaining_lease_years:Q",
@@ -46,7 +31,7 @@ points = (
 )
 
 bars = (
-    alt.Chart(filtered)
+    alt.Chart(sf.df)
     .mark_bar()
     .encode(
         y="cat_remaining_lease_years:N",

@@ -11,11 +11,13 @@ class SidebarFilter:
         select_flat_type=True,
         select_towns=(True, "single"),
         select_lease_years=True,
+        default_flat_type="ALL",
     ):
         self.df = df.with_columns(pl.col("month").str.strptime(pl.Date, "%Y-%m"))
         self.min_date = min_date or self.df["month"].min()
         self.max_date = max_date or self.df["month"].max()
         self.selected_towns = []
+        self.default_flat_type = default_flat_type
 
         self.hide_elements()
 
@@ -69,7 +71,11 @@ class SidebarFilter:
     def create_flat_select(self):
         flat_types = sorted(self.df["flat_type"].unique())
         flat_types.insert(0, "ALL")
-        return st.sidebar.selectbox("Select flat type", flat_types)
+        return st.sidebar.selectbox(
+            "Select flat type",
+            flat_types,
+            index=flat_types.index(self.default_flat_type),
+        )
 
     def filter_by_flat_type(self):
         if self.option_flat != "ALL":

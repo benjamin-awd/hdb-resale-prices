@@ -73,7 +73,6 @@ for lat, lon, address, town, price, lease, level in zip(
     highest_price_filtered["remaining_lease_years"],
     highest_price_filtered["storey_range"],
 ):
-    price_rounded = "$" + str(round(price))
     # pin colour
     if price > median_price:
         color = "red"
@@ -82,15 +81,14 @@ for lat, lon, address, town, price, lease, level in zip(
 
     # html for popup
     html = f"""
-            <h4>{town}</h4>
-            <b>{address}</b>
-            <p>{level} storey
-                <br>
-                {price_rounded}
-                <br>
-                {lease} years remaining
+        <div style="font-family: 'Source Sans Pro', sans-serif; line-height: 1.5; padding: 3px;">
+            <b style="font-size: 16px; color: black;">{address}</b>
+            <p style="margin: 10px 0; font-size: 14px; color: black;">
+                <span style="font-weight: bold;">Storey:</span> {level}<br>
+                <span style="font-weight: bold;">Price:</span> <span style="color: black;">${round(price):,}</span><br>
+                <span style="font-weight: bold;">Remaining Lease:</span> {lease} years
             </p>
-
+        </div>
     """
 
     popup = folium.Popup(html, max_width=170)

@@ -5,22 +5,24 @@ import streamlit as st
 class SidebarFilter:
     def __init__(
         self,
-        min_date,
-        max_date,
         df: pl.DataFrame,
+        min_date=None,
+        max_date=None,
         select_flat_type=True,
         select_towns=(True, "single"),
         select_lease_years=True,
     ):
-        self.min_date = min_date
-        self.max_date = max_date
-        self.df = df
+        self.df = df.with_columns(pl.col("month").str.strptime(pl.Date, "%Y-%m"))
+        self.min_date = min_date or self.df["month"].min()
+        self.max_date = max_date or self.df["month"].max()
         self.selected_towns = []
 
         self.hide_elements()
 
-        self.start_date, self.end_date = self.create_slider()
-        self.df.filter((pl.col("month") >= min_date) & (pl.col("month") <= max_date))
+        start_date, end_date = self.create_slider()
+        self.df = self.df.filter(
+            (pl.col("month") >= start_date) & (pl.col("month") <= end_date)
+        )
 
         if select_flat_type:
             self.option_flat = self.create_flat_select()

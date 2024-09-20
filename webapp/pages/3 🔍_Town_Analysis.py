@@ -4,6 +4,7 @@ import streamlit as st
 from PIL import Image
 from streamlit_folium import st_folium
 
+from webapp.filter import SidebarFilter
 from webapp.read import load_dataframe
 
 st.title("🔍 Town Analysis")

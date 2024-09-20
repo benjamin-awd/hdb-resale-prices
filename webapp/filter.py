@@ -29,7 +29,7 @@ class SidebarFilter:
 
     def create_slider(self):
         return st.sidebar.slider(
-            "Select Date Range",
+            "Select date range",
             min_value=self.min_date,
             max_value=self.max_date,
             value=(self.min_date, self.max_date),

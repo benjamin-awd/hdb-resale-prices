@@ -39,14 +39,10 @@ min_date = df["month"].min()
 max_date = df["month"].max()
 
 
-sf = SidebarFilter(min_date, max_date, df)
-
-filtered_df = sf.selected_flat_type.filter(
-    (pl.col("month") >= sf.start_date) & (pl.col("month") <= sf.end_date)
-)
+sf = SidebarFilter(min_date, max_date, df, select_towns=(True, "multi"))
 
 chart_df = (
-    filtered_df.group_by(["month", "cat_remaining_lease_years"])
+    sf.df.group_by(["month", "cat_remaining_lease_years"])
     .agg(pl.median("resale_price").alias("median_resale_price"))
     .sort(["cat_remaining_lease_years", "month"])
 )

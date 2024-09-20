@@ -3,6 +3,7 @@ import plotly.express as px
 import polars as pl
 import streamlit as st
 
+from webapp.filter import SidebarFilter
 from webapp.read import load_dataframe
 
 st.title("📊 Distribution of Resale Price")
@@ -10,18 +11,18 @@ st.write(
     "Find out how much you will need approximately for buying a flat in the respective towns."
 )
 df = load_dataframe()
+df = df.with_columns(pl.col("month").str.strptime(pl.Date, "%Y-%m"))
+min_date = df["month"].min()
+max_date = df["month"].max()
 
-option_flat = st.selectbox(
-    "Select a flat type",
-    ("2 ROOM", "3 ROOM", "4 ROOM", "5 ROOM", "EXECUTIVE", "MULTI-GENERATION"),
-)
-filtered = df.filter(pl.col("flat_type") == option_flat)
+
+sf = SidebarFilter(min_date, max_date, df, select_towns=(False, ""))
 
 select_lease = st.selectbox(
     "Select remaining lease years",
-    sorted(list(filtered["cat_remaining_lease_years"].unique())),
+    sorted(list(sf.df["cat_remaining_lease_years"].unique())),
 )
-filtered = filtered.filter(pl.col("cat_remaining_lease_years") == select_lease)
+filtered = sf.df.filter(pl.col("cat_remaining_lease_years") == select_lease)
 
 # Generate a rainbow color palette
 towns = filtered["town"].unique()

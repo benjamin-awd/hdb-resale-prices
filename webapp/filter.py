@@ -3,17 +3,39 @@ import streamlit as st
 
 
 class SidebarFilter:
-    def __init__(self, min_date, max_date, df: pl.DataFrame):
+    def __init__(
+        self,
+        min_date,
+        max_date,
+        df: pl.DataFrame,
+        select_flat_type=True,
+        select_towns=(True, "single"),
+        remaining_lease_years=True,
+    ):
         self.min_date = min_date
         self.max_date = max_date
         self.df = df
         self.selected_towns = []
 
         self.hide_elements()
+
         self.start_date, self.end_date = self.create_slider()
-        self.option_flat = self.create_selectbox()
-        self.selected_flat_type = self.filter_by_flat_type()
-        self.selected_towns = self.create_multiselect()
+        self.df.filter((pl.col("month") >= min_date) & (pl.col("month") <= max_date))
+
+        if select_flat_type:
+            self.option_flat = self.create_selectbox()
+            self.df = self.filter_by_flat_type()
+
+        show_town_filter, town_filter_type = select_towns
+        if show_town_filter:
+            if town_filter_type == "single":
+                self.selected_towns = self.create_town_select()
+
+            if town_filter_type == "multi":
+                self.selected_towns = self.create_town_multiselect()
+
+        if self.selected_towns:
+            self.df = self.df.filter(pl.col("town").is_in(self.selected_towns))
 
     def hide_elements(self):
         hide_css = """
@@ -47,10 +69,19 @@ class SidebarFilter:
         else:
             return self.df
 
-    def create_multiselect(self):
-        town_filter = sorted(self.selected_flat_type["town"].unique())
-        return st.sidebar.multiselect(
+    def create_town_select(self):
+        town_filter = sorted(self.df["town"].unique())
+        town = st.sidebar.selectbox(
             "Select town",
+            options=town_filter,
+            placeholder="Choose town (default: all)",
+        )
+        return [town]
+
+    def create_town_multiselect(self):
+        town_filter = sorted(self.df["town"].unique())
+        return st.sidebar.multiselect(
+            "Select town(s)",
             options=town_filter,
             default=None,
             placeholder="Choose town (default: all)",

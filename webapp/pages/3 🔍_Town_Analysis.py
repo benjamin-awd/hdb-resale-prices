@@ -7,8 +7,6 @@ from streamlit_folium import st_folium
 from webapp.filter import SidebarFilter
 from webapp.read import load_dataframe
 
-st.set_page_config(layout="wide")
-
 st.title("🔍 Town Analysis")
 
 st.write("Look for your potential units by using the filters here!")
@@ -21,25 +19,25 @@ df = load_dataframe()
 ### SELECTIONS ###
 ##################
 # filter flat type
-option_flat = st.selectbox(
-    "Select a flat type",
-    ("2 ROOM", "3 ROOM", "4 ROOM", "5 ROOM", "EXECUTIVE", "MULTI-GENERATION"),
-)
-data_flat = df.filter(pl.col("flat_type") == option_flat)
+sf = SidebarFilter(df, default_flat_type="2 ROOM")
 
-# filter town
-town_filter = list(data_flat["town"].unique())
-option_town = st.selectbox("Select a town", options=sorted(town_filter, key=str.lower))
-filtered = df.filter(
-    (pl.col("town") == option_town) & (pl.col("flat_type") == option_flat)
-)
+percentage_threshold = 0.60
 
-filtered = filtered.with_columns(
-    pl.col("resale_price")
-    .qcut(3, labels=["Low", "Medium", "High"])
+median_resale_price = df["resale_price"].median()
+# Calculate the absolute threshold value based on the percentage
+threshold = median_resale_price * percentage_threshold
+
+# Bin the resale prices based on the median and percentage threshold
+filtered = sf.df.with_columns(
+    pl.when(pl.col("resale_price") < (median_resale_price - threshold))
+    .then(pl.lit("Low"))
+    .when(pl.col("resale_price") > (median_resale_price + threshold))
+    .then(pl.lit("High"))
+    .otherwise(pl.lit("Medium"))
     .alias("cat_resale_price")
 )
 
+st.write("Median price: ", median_resale_price)
 # Count the occurrences of each bin
 cat_resale_price = df.group_by("resale_price").agg(pl.len().alias("count"))
 cat_resale_price = cat_resale_price.rename({"resale_price": "Resale Price"})
@@ -47,13 +45,6 @@ cat_resale_price = cat_resale_price.rename({"resale_price": "Resale Price"})
 cat_resale_price = cat_resale_price.with_columns(
     pl.col("Resale Price").cast(pl.Utf8).str.strip_chars("()[]").replace(",", " to")
 )
-
-select_lease = st.selectbox(
-    "Select remaining lease years",
-    sorted(list(filtered["cat_remaining_lease_years"].unique())),
-)
-
-filtered = filtered.filter(pl.col("cat_remaining_lease_years") == select_lease)
 
 # set slider range for resale price
 min_value = int(filtered["resale_price"].min())

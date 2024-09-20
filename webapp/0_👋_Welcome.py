@@ -13,7 +13,7 @@ earliest_date = min(data["month"])
 latest_date = max(data["month"])
 range_date = earliest_date + " to " + latest_date
 
-st.image(logo, width=800)
+st.image(logo, width=500)
 
 st.markdown(
     """## Resale Visualizations

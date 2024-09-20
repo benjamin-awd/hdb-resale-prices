@@ -75,7 +75,7 @@ def get_map_results(data):
 def load_existing_data(file_path: Path) -> pd.DataFrame:
     """Load existing data from a CSV file if it exists, otherwise return an empty DataFrame."""
     if file_path.exists():
-        return pd.read_csv(
+        df = pd.read_csv(
             file_path,
             dtype={
                 "_id": "Int64",
@@ -97,7 +97,10 @@ def load_existing_data(file_path: Path) -> pd.DataFrame:
             },
             na_values=["NIL", "NA"],
         )
-    return pd.DataFrame()
+
+        return df
+
+    return None
 
 
 def skip_process(file_path: Path, should_process: bool) -> bool:
@@ -110,12 +113,11 @@ def skip_process(file_path: Path, should_process: bool) -> bool:
 
 def process_new_addresses(
     new_data: pd.DataFrame, existing_data: pd.DataFrame
-) -> pd.DataFrame:
+) -> pd.DataFrame | None:
     """Process new addresses and fetch map data for them."""
     new_addresses = set(new_data["address"]) - set(existing_data["address"])
-    breakpoint()
     if not new_addresses:
-        return pd.DataFrame()
+        return None
 
     print(f"Processing {len(new_addresses)} new addresses")
     addresses_to_process = new_data[new_data["address"].isin(new_addresses)]

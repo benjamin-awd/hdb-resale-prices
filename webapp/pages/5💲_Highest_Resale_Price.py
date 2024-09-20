@@ -62,9 +62,10 @@ longitude = 103.8198
 sg_map = folium.Map(
     location=[latitude, longitude],
     zoom_start=12,
-    attr="OneMap",
+    attr="OpenStreetMap",
 )
-for lat, lon, address, town, price, lease, level in zip(
+for month, lat, lon, address, town, price, lease, level in zip(
+    highest_price_filtered["month"],
     highest_price_filtered["latitude"],
     highest_price_filtered["longitude"],
     highest_price_filtered["address"],
@@ -82,10 +83,11 @@ for lat, lon, address, town, price, lease, level in zip(
     # html for popup
     html = f"""
         <div style="font-family: 'Source Sans Pro', sans-serif; line-height: 1.5; padding: 3px;">
-            <b style="font-size: 16px; color: black;">{address}</b>
-            <p style="margin: 10px 0; font-size: 14px; color: black;">
+            <b style="font-size: 16px;">{address}</b>
+            <p style="margin: 10px 0; font-size: 14px;">
+                <span style="font-weight: bold;">Sold:</span> {month}<br>
                 <span style="font-weight: bold;">Storey:</span> {level}<br>
-                <span style="font-weight: bold;">Price:</span> <span style="color: black;">${round(price):,}</span><br>
+                <span style="font-weight: bold;">Price:</span> ${round(price):,}</span><br>
                 <span style="font-weight: bold;">Remaining Lease:</span> {lease} years
             </p>
         </div>

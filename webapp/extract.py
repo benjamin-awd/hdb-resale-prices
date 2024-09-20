@@ -75,7 +75,28 @@ def get_map_results(data):
 def load_existing_data(file_path: Path) -> pd.DataFrame:
     """Load existing data from a CSV file if it exists, otherwise return an empty DataFrame."""
     if file_path.exists():
-        return pd.read_csv(file_path)
+        return pd.read_csv(
+            file_path,
+            dtype={
+                "_id": "Int64",
+                "month": str,
+                "town": str,
+                "flat_type": str,
+                "block": str,
+                "street_name": str,
+                "storey_range": str,
+                "floor_area_sqm": float,
+                "flat_model": str,
+                "lease_commence_date": "Int64",
+                "remaining_lease": str,
+                "resale_price": float,
+                "address": str,
+                "postal": "Int64",
+                "latitude": float,
+                "longitude": float,
+            },
+            na_values=["NIL", "NA"],
+        )
     return pd.DataFrame()
 
 

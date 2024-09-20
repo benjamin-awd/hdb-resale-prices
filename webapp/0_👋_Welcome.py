@@ -39,32 +39,44 @@ df = df.with_columns(pl.col("month").str.strptime(pl.Date, "%Y-%m"))
 min_date = df["month"].min()
 max_date = df["month"].max()
 
-start_date, end_date = st.slider(
-    "Select Date Range",
-    min_value=min_date,
-    max_value=max_date,
-    value=(min_date, max_date),
-    format="YYYY-MM",
-)
+with st.sidebar:
+    hide_elements = """
+        <style>
+            div[data-testid="stSliderTickBarMin"],
+            div[data-testid="stSliderTickBarMax"] {
+                display: none;
+            }
+        </style>
+    """
 
-flat_types = sorted(df["flat_type"].unique())
-flat_types.insert(0, "ALL")
-option_flat = st.selectbox("Select flat type", flat_types)
+    st.markdown(hide_elements, unsafe_allow_html=True)
 
-if option_flat != "ALL":
-    data_flat = df.filter(pl.col("flat_type") == option_flat)
-else:
-    data_flat = df
+    start_date, end_date = st.slider(
+        "Select Date Range",
+        min_value=min_date,
+        max_value=max_date,
+        value=(min_date, max_date),
+        format="YYYY-MM",
+    )
 
-town_filter = sorted(data_flat["town"].unique())
-container = st.container()
+    flat_types = sorted(df["flat_type"].unique())
+    flat_types.insert(0, "ALL")
+    option_flat = st.selectbox("Select flat type", flat_types)
 
-selected_towns = container.multiselect(
-    "Select town",
-    options=town_filter,
-    default=None,
-    placeholder="Choose an option (default: all)",
-)
+    if option_flat != "ALL":
+        data_flat = df.filter(pl.col("flat_type") == option_flat)
+    else:
+        data_flat = df
+
+    town_filter = sorted(data_flat["town"].unique())
+    container = st.container()
+
+    selected_towns = container.multiselect(
+        "Select town",
+        options=town_filter,
+        default=None,
+        placeholder="Choose town (default: all)",
+    )
 
 if selected_towns:
     filtered = data_flat.filter(pl.col("town").is_in(selected_towns))

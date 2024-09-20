@@ -9,7 +9,7 @@ authors = ["Benjamin Dornel <benjamindornel@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.12,<3.13"
 pandas = "^2.2.2"
 streamlit = "^1.38.0"
 folium = "^0.17.0"
@@ -20,6 +20,7 @@ tqdm = "^4.66.5"
 polars = "^1.7.1"
 plotly = "^5.24.1"
 python-dateutil = "^2.9.0.post0"
+pybadges = {git = "https://github.com/benjamin-awd/pybadges"}
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.0"

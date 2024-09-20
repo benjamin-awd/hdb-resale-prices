@@ -18,29 +18,28 @@ max_date = df["month"].max()
 
 sf = SidebarFilter(min_date, max_date, df, select_towns=(False, ""))
 
-select_lease = st.selectbox(
-    "Select remaining lease years",
-    sorted(list(sf.df["cat_remaining_lease_years"].unique())),
-)
-filtered = sf.df.filter(pl.col("cat_remaining_lease_years") == select_lease)
-
 # Generate a rainbow color palette
-towns = filtered["town"].unique()
+towns = sf.df["town"].unique()
 colors = ["hsl({}, 70%, 70%)".format(h) for h in np.linspace(0, 360, len(towns))]
 
-fig = px.strip(
-    filtered,
-    x="resale_price",
-    y="town",
+fig = px.box(
+    sf.df,
+    x="town",
+    y="resale_price",
     color="town",
     color_discrete_sequence=colors,
     title="Distribution of Resale Prices by Town",
     labels={"resale_price": "Resale Price", "town": "Town"},
 )
 
-fig.update_layout(xaxis_title="Resale Price", yaxis_title="Town", height=900)
+fig.update_layout(
+    xaxis_title="Resale Price",
+    yaxis_title="Town",
+    height=900,
+    legend=dict(orientation="h", yanchor="bottom", y=-0.55, xanchor="right", x=1),
+)
 fig.update_traces(
-    hovertemplate="<b>%{y}</b><br>Resale Price: %{x}<br>",
+    hovertemplate="<b>%{x}</b><br>Resale Price: %{y}<br>",
 )
 
 fig.update_layout(hovermode="closest")

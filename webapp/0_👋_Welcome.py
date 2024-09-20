@@ -39,7 +39,9 @@ min_date = df["month"].min()
 max_date = df["month"].max()
 
 
-sf = SidebarFilter(min_date, max_date, df, select_towns=(True, "multi"))
+sf = SidebarFilter(
+    min_date, max_date, df, select_towns=(True, "multi"), select_lease_years=False
+)
 
 chart_df = (
     sf.df.group_by(["month", "cat_remaining_lease_years"])
@@ -80,7 +82,7 @@ fig.update_layout(
     annotations=[
         dict(
             x=0.5,
-            y=-0.3,  # Trying a negative number makes the caption disappear - I'd like the caption to be below the map
+            y=-0.3,
             xref="paper",
             yref="paper",
             text=source,

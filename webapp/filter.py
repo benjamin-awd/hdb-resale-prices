@@ -10,7 +10,7 @@ class SidebarFilter:
         df: pl.DataFrame,
         select_flat_type=True,
         select_towns=(True, "single"),
-        remaining_lease_years=True,
+        select_lease_years=True,
     ):
         self.min_date = min_date
         self.max_date = max_date
@@ -23,7 +23,7 @@ class SidebarFilter:
         self.df.filter((pl.col("month") >= min_date) & (pl.col("month") <= max_date))
 
         if select_flat_type:
-            self.option_flat = self.create_selectbox()
+            self.option_flat = self.create_flat_select()
             self.df = self.filter_by_flat_type()
 
         show_town_filter, town_filter_type = select_towns
@@ -36,6 +36,12 @@ class SidebarFilter:
 
         if self.selected_towns:
             self.df = self.df.filter(pl.col("town").is_in(self.selected_towns))
+
+        if select_lease_years:
+            select_lease = self.create_lease_select()
+            self.df = self.df.filter(
+                pl.col("cat_remaining_lease_years") == select_lease
+            )
 
     def hide_elements(self):
         hide_css = """
@@ -58,7 +64,7 @@ class SidebarFilter:
             format="YYYY-MM",
         )
 
-    def create_selectbox(self):
+    def create_flat_select(self):
         flat_types = sorted(self.df["flat_type"].unique())
         flat_types.insert(0, "ALL")
         return st.sidebar.selectbox("Select flat type", flat_types)
@@ -85,4 +91,10 @@ class SidebarFilter:
             options=town_filter,
             default=None,
             placeholder="Choose town (default: all)",
+        )
+
+    def create_lease_select(self):
+        return st.sidebar.selectbox(
+            "Select remaining lease years",
+            sorted(list(self.df["cat_remaining_lease_years"].unique())),
         )

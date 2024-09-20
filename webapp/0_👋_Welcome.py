@@ -5,6 +5,7 @@ import polars as pl
 import pybadges
 import streamlit as st
 
+from webapp.filter import SidebarFilter
 from webapp.logo import logo
 from webapp.read import load_dataframe
 from webapp.utils import get_project_root
@@ -39,52 +40,11 @@ df = df.with_columns(pl.col("month").str.strptime(pl.Date, "%Y-%m"))
 min_date = df["month"].min()
 max_date = df["month"].max()
 
-with st.sidebar:
-    hide_elements = """
-        <style>
-            div[data-testid="stSliderTickBarMin"],
-            div[data-testid="stSliderTickBarMax"] {
-                display: none;
-            }
-        </style>
-    """
 
-    st.markdown(hide_elements, unsafe_allow_html=True)
+sf = SidebarFilter(min_date, max_date, df)
 
-    start_date, end_date = st.slider(
-        "Select Date Range",
-        min_value=min_date,
-        max_value=max_date,
-        value=(min_date, max_date),
-        format="YYYY-MM",
-    )
-
-    flat_types = sorted(df["flat_type"].unique())
-    flat_types.insert(0, "ALL")
-    option_flat = st.selectbox("Select flat type", flat_types)
-
-    if option_flat != "ALL":
-        data_flat = df.filter(pl.col("flat_type") == option_flat)
-    else:
-        data_flat = df
-
-    town_filter = sorted(data_flat["town"].unique())
-    container = st.container()
-
-    selected_towns = container.multiselect(
-        "Select town",
-        options=town_filter,
-        default=None,
-        placeholder="Choose town (default: all)",
-    )
-
-if selected_towns:
-    filtered = data_flat.filter(pl.col("town").is_in(selected_towns))
-else:
-    filtered = data_flat
-
-filtered_df = filtered.filter(
-    (pl.col("month") >= start_date) & (pl.col("month") <= end_date)
+filtered_df = sf.selected_flat_type.filter(
+    (pl.col("month") >= sf.start_date) & (pl.col("month") <= sf.end_date)
 )
 
 chart_df = (

@@ -4,6 +4,8 @@ import streamlit as st
 
 from webapp.read import load_dataframe
 
+st.set_page_config(layout="wide")
+
 st.title("📈 Price Trend")
 st.write("The resale price is aggregated using the median value of each town.")
 

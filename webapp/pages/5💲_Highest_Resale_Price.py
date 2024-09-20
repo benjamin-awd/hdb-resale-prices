@@ -6,6 +6,8 @@ from streamlit_folium import st_folium
 
 from webapp.read import load_dataframe
 
+st.set_page_config(layout="wide")
+
 st.title("💲Highest Resale Price")
 st.write(
     "The unit with the highest resale price per town by flat type is plotted below."

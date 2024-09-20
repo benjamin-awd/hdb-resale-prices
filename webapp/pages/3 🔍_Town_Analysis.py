@@ -7,6 +7,8 @@ from streamlit_folium import st_folium
 from webapp.filter import SidebarFilter
 from webapp.read import load_dataframe
 
+st.set_page_config(layout="wide")
+
 st.title("🔍 Town Analysis")
 
 st.write("Look for your potential units by using the filters here!")

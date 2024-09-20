@@ -4,6 +4,8 @@ import streamlit as st
 
 from webapp.read import load_dataframe
 
+st.set_page_config(layout="wide")
+
 st.title("📅 Remaining Lease")
 
 st.write(

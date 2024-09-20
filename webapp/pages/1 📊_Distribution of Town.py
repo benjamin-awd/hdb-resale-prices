@@ -5,6 +5,8 @@ import streamlit as st
 from webapp.filter import SidebarFilter
 from webapp.read import load_dataframe
 
+st.set_page_config(layout="wide")
+
 st.title("📊 Distribution of Resale Price")
 st.write(
     "Find out how much you will need approximately for buying a flat in the respective towns."

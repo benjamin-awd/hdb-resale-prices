@@ -29,9 +29,7 @@ st.image(last_updated_badge)
 
 st.markdown("## Resale Visualizations")
 
-st.markdown(
-    "Make better decisions using data from the latest HDB resale market movements"
-)
+st.markdown("Make better decisions using the latest HDB resale market movements")
 
 df = load_dataframe()
 

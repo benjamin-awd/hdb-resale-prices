@@ -84,7 +84,7 @@ longitude = 103.8198
 sg_map = folium.Map(
     location=[latitude, longitude],
     zoom_start=2,
-    attr="OneMap",
+    attr="OpenStreetMap",
 )
 for lat, lon, address, town, price, lease, level, cat_resale_price in zip(
     filtered_sub["latitude"],

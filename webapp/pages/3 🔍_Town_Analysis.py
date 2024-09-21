@@ -50,12 +50,13 @@ cat_resale_price = cat_resale_price.with_columns(
 min_value = int(filtered["resale_price"].min())
 max_value = int(filtered["resale_price"].max())
 
-select_range = st.slider(
+min_select, max_select = st.slider(
     "Select resale price range ($)",
-    min_value,
-    max_value,
-    (min_value, max_value),
-    step=10000,
+    int(min_value / 1000),
+    int(max_value / 1000),
+    (int(min_value / 1000), int(max_value / 1000)),
+    step=10,
+    format="$%sk",
 )
 
 
@@ -64,8 +65,8 @@ select_range = st.slider(
 ####################
 # filter selection according to range
 filtered_sub = filtered.filter(
-    (pl.col("resale_price") >= select_range[0])
-    & (pl.col("resale_price") <= select_range[1])
+    (pl.col("resale_price") >= min_select * 1000)
+    & (pl.col("resale_price") <= max_select * 1000)
 )
 
 # st.write("**Low (<40th percentile):**", cat_resale_price['Resale Price'][0])

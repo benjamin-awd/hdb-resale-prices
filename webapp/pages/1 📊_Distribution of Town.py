@@ -33,7 +33,14 @@ fig.update_layout(
     xaxis_title="Resale Price",
     yaxis_title="Town",
     height=900,
-    legend=dict(orientation="h", yanchor="bottom", y=-0.55, xanchor="right", x=1),
+    legend=dict(
+        y=-0.55,
+        orientation="h",
+        yanchor="bottom",
+        xanchor="right",
+        yref="container",
+        x=0.9,
+    ),
 )
 fig.update_traces(
     hovertemplate="<b>%{x}</b><br>Resale Price: %{y}<br>",

@@ -22,9 +22,9 @@ class SidebarFilter:
 
         self.hide_elements()
 
-        start_date, end_date = self.create_slider()
+        self.start_date, self.end_date = self.create_slider()
         self.df = self.df.filter(
-            (pl.col("month") >= start_date) & (pl.col("month") <= end_date)
+            (pl.col("month") >= self.start_date) & (pl.col("month") <= self.end_date)
         )
 
         if select_flat_type:

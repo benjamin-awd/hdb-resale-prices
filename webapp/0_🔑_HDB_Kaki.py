@@ -6,11 +6,11 @@ import pybadges
 import streamlit as st
 
 from webapp.filter import SidebarFilter
-from webapp.logo import logo
+from webapp.logo import icon, logo
 from webapp.read import load_dataframe
 from webapp.utils import get_project_root
 
-st.set_page_config(page_title="HDB Resale Prices", layout="wide")
+st.set_page_config(page_title="HDB Kaki", page_icon=icon, layout="wide")
 
 st.image(logo, width=500)
 
@@ -62,7 +62,7 @@ fig = px.line(
     x="month",
     y="percentage_change",
     color="cat_remaining_lease_years",
-    title="Percentage Change in Median Resale Price Over Time",
+    title=f"Percentage Change in Median Resale Price since {sf.start_date}",
     labels={
         "percentage_change": "Percentage Change (%)",
         "month": "Month",
@@ -71,6 +71,7 @@ fig = px.line(
 )
 
 fig.update_xaxes(tickformat="%Y-%m")
+fig.update_yaxes(ticksuffix="%")
 fig.update_traces(hovertemplate="%{y:.2f}%")
 source = "Source: <a href='https://data.gov.sg/datasets/d_8b84c4ee58e3cfc0ece0d773c8ca6abc/view'>data.gov.sg</a>"
 

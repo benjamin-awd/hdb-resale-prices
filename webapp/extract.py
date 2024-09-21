@@ -135,26 +135,30 @@ def process_month(month: str, data_dir: Path, should_process: bool = False):
     new_data = get_data(start_date=month, end_date=month)
     existing_data = load_existing_data(file_path)
 
-    if not existing_data.empty:
-        existing_addresses = set(existing_data["address"])
-        new_data = new_data[~new_data["address"].isin(existing_addresses)]
+    if existing_data is not None:
+        if not existing_data.empty:
+            existing_addresses = set(existing_data["address"])
+            new_data = new_data[~new_data["address"].isin(existing_addresses)]
 
     if not new_data.empty:
         print(f"Fetching latitude and longitude for new addresses in {month}")
         new_map_data = get_map_results(new_data)
         new_data = new_data.merge(new_map_data, on="address", how="left")
 
-    if not existing_data.empty:
-        missing_lat_lon = existing_data[["latitude", "longitude"]].isna().any(axis=1)
-        if missing_lat_lon.any():
-            print(
-                f"Updating missing latitude and longitude for existing addresses in {month}"
+    if existing_data is not None:
+        if not existing_data.empty:
+            missing_lat_lon = (
+                existing_data[["latitude", "longitude"]].isna().any(axis=1)
             )
-            addresses_to_update = existing_data[missing_lat_lon]
-            updated_map_data = get_map_results(addresses_to_update)
-            existing_data.update(updated_map_data)
+            if missing_lat_lon.any():
+                print(
+                    f"Updating missing latitude and longitude for existing addresses in {month}"
+                )
+                addresses_to_update = existing_data[missing_lat_lon]
+                updated_map_data = get_map_results(addresses_to_update)
+                existing_data.update(updated_map_data)
 
-        print(f"Processing complete for {month}")
+            print(f"Processing complete for {month}")
 
     final_data = pd.concat(
         [existing_data, new_data if not new_data.empty else None], ignore_index=True

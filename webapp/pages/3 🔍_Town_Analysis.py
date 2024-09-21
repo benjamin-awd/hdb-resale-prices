@@ -21,9 +21,9 @@ df = load_dataframe()
 # filter flat type
 sf = SidebarFilter(df, default_flat_type="2 ROOM")
 
-percentage_threshold = 0.60
+percentage_threshold = 0.1
 
-median_resale_price = df["resale_price"].median()
+median_resale_price = sf.df["resale_price"].median()
 # Calculate the absolute threshold value based on the percentage
 threshold = median_resale_price * percentage_threshold
 

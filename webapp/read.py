@@ -29,7 +29,13 @@ def get_dataframe_from_parquet() -> pl.DataFrame:
     data_dir: Path = get_project_root() / "data"
 
     df = pl.read_parquet(data_dir / "df.parquet")
-    return df
+    df = df.with_columns(
+        pl.when(pl.col("address").str.contains("HOLLAND"))
+        .then(pl.lit("HOLLAND"))
+        .otherwise(pl.col("town"))
+        .alias("town")
+    )
+    return df.sort(by="town")
 
 
 @cache

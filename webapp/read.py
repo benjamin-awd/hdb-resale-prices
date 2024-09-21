@@ -41,7 +41,8 @@ def get_dataframe_from_parquet() -> pl.DataFrame:
 @cache
 def load_dataframe() -> pl.DataFrame:
     """Wrapper for get_dataframe that provides a cache"""
-    return get_dataframe_from_parquet()
+    df = get_dataframe_from_parquet()
+    return df.with_columns(pl.col("month").str.strptime(pl.Date, "%Y-%m"))
 
 
 schema = {

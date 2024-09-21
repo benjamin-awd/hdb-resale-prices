@@ -33,7 +33,12 @@ st.markdown("Make better decisions using the latest HDB resale market movements"
 
 df = load_dataframe()
 
-sf = SidebarFilter(df, select_towns=(True, "multi"), select_lease_years=False)
+sf = SidebarFilter(
+    df,
+    min_date=df["month"].min(),
+    select_towns=(True, "multi"),
+    select_lease_years=False,
+)
 
 chart_df = (
     sf.df.group_by(["month", "cat_remaining_lease_years"])

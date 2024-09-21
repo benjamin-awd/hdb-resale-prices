@@ -1,5 +1,6 @@
 import polars as pl
 import streamlit as st
+from dateutil.relativedelta import relativedelta
 
 
 class SidebarFilter:
@@ -13,8 +14,8 @@ class SidebarFilter:
         select_lease_years=True,
         default_flat_type="ALL",
     ):
-        self.df = df.with_columns(pl.col("month").str.strptime(pl.Date, "%Y-%m"))
-        self.min_date = min_date or self.df["month"].min()
+        self.df = df
+        self.min_date = min_date or self.df["month"].max() - relativedelta(months=24)
         self.max_date = max_date or self.df["month"].max()
         self.selected_towns = []
         self.default_flat_type = default_flat_type
@@ -62,8 +63,8 @@ class SidebarFilter:
     def create_slider(self):
         return st.sidebar.slider(
             "Select date range",
-            min_value=self.min_date,
-            max_value=self.max_date,
+            min_value=self.df["month"].min(),
+            max_value=self.df["month"].max(),
             value=(self.min_date, self.max_date),
             format="YYYY-MM",
         )

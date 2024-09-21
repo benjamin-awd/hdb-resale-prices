@@ -13,7 +13,7 @@ st.write(
     "The unit with the highest resale price per town by flat type is plotted below."
 )
 st.write(
-    "The colour of the pins reflect whether the unit is below or above the median value. Red indicates below median while green indicates above median"
+    "The colour of the pins reflect whether the unit is below or above the median value. Red indicates above median while green indicates below median"
 )
 
 # read data

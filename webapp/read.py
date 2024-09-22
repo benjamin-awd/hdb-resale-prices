@@ -38,7 +38,6 @@ def get_dataframe_from_parquet() -> pl.DataFrame:
     return df.sort(by="town")
 
 
-@cache
 def load_dataframe() -> pl.DataFrame:
     """Wrapper for get_dataframe that provides a cache"""
     df = get_dataframe_from_parquet()

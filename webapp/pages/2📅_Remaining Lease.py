@@ -1,4 +1,4 @@
-import altair as alt
+import plotly.express as px
 import streamlit as st
 
 from webapp.filter import SidebarFilter
@@ -14,33 +14,41 @@ st.write(
 df = load_dataframe()
 sf = SidebarFilter(df, select_lease_years=False, default_flat_type="4 ROOM")
 
-brush = alt.selection_interval()
-points = (
-    alt.Chart(sf.df)
-    .mark_point()
-    .encode(
-        x="remaining_lease_years:Q",
-        y="resale_price:Q",
-        tooltip=["remaining_lease_years", "resale_price"],
-        color=alt.condition(
-            brush, "cat_remaining_lease_years:N", alt.value("lightgray")
-        ),
-    )
-    .add_params(brush)
-    .interactive()
+scatter_fig = px.scatter(
+    sf.df,
+    x="remaining_lease_years",
+    y="resale_price",
+    color="cat_remaining_lease_years",
+    hover_data=["remaining_lease_years", "resale_price"],
+    labels={
+        "remaining_lease_years": "Remaining Lease Years",
+        "resale_price": "Resale Price",
+    },
 )
 
-bars = (
-    alt.Chart(sf.df)
-    .mark_bar()
-    .encode(
-        y="cat_remaining_lease_years:N",
-        color="cat_remaining_lease_years:N",
-        x="count(cat_remaining_lease_years):Q",
-        tooltip=["cat_remaining_lease_years", "count(cat_remaining_lease_years)"],
-    )
-    .transform_filter(brush)
-    .interactive()
+scatter_fig.update_traces(
+    marker=dict(
+        size=6,
+        symbol="circle-open",
+        opacity=1,
+        line=dict(width=1.5),
+    ),
+    selector=dict(mode="markers"),
 )
 
-st.altair_chart(points & bars, use_container_width=True)
+bar_fig = px.bar(
+    sf.df.group_by("cat_remaining_lease_years")
+    .len()
+    .sort(by="cat_remaining_lease_years"),
+    x="len",
+    y="cat_remaining_lease_years",
+    color="cat_remaining_lease_years",
+    orientation="h",
+    labels={"cat_remaining_lease_years": "Remaining Lease Category"},
+)
+
+scatter_fig.update_layout(height=600)
+bar_fig.update_layout(height=250)
+
+st.plotly_chart(scatter_fig, use_container_width=True)
+st.plotly_chart(bar_fig, use_container_width=True)

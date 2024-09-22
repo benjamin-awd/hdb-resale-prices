@@ -12,4 +12,4 @@ HDB Kaki helps you make better decisions using the latest resale market movement
 </p>
 
 ## Attribution
-This data comes from the "Resale flat prices based on registration date from Jan-2017" dataset from [data.gov.sg](https://data.gov.sg/datasets/d_8b84c4ee58e3cfc0ece0d773c8ca6abc/view) which is made available under the terms of the [Singapore Open Data Licence](https://data.gov.sg/open-data-licence) v1.0
+The data used in this application comes from the "Resale flat prices based on registration date from Jan-2017" dataset from [data.gov.sg](https://data.gov.sg/datasets/d_8b84c4ee58e3cfc0ece0d773c8ca6abc/view) which is made available under the terms of the [Singapore Open Data Licence](https://data.gov.sg/open-data-licence) v1.0.

@@ -67,7 +67,7 @@ annotations = dict(
     annotations=[
         dict(
             x=0.5,
-            y=-0.31,
+            y=-0.33,
             xref="paper",
             yref="paper",
             text=source,

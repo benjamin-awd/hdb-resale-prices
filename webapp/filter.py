@@ -13,12 +13,14 @@ class SidebarFilter:
         select_towns=(True, "single"),
         select_lease_years=True,
         default_flat_type="ALL",
+        default_town=None,
     ):
         self.df = df
         self.min_date = min_date or self.df["month"].max() - relativedelta(months=24)
         self.max_date = max_date or self.df["month"].max()
         self.selected_towns = []
         self.default_flat_type = default_flat_type
+        self.default_town = default_town
 
         self.hide_elements()
 
@@ -86,9 +88,14 @@ class SidebarFilter:
 
     def create_town_select(self):
         town_filter = sorted(self.df["town"].unique())
+        if self.default_town in town_filter:
+            default_index = town_filter.index(self.default_town)
+        else:
+            default_index = 0
         town = st.sidebar.selectbox(
             "Select town",
             options=town_filter,
+            index=default_index,
             placeholder="Choose town (default: all)",
         )
         return [town]
@@ -98,7 +105,9 @@ class SidebarFilter:
         return st.sidebar.multiselect(
             "Select town(s)",
             options=town_filter,
-            default=None,
+            default=(
+                [self.default_town] if self.default_town else None
+            ),  # Use default town for multi-select
             placeholder="Choose town (default: all)",
         )
 

@@ -33,77 +33,131 @@ st.markdown("Make better decisions using the latest HDB resale market movements"
 
 df = load_dataframe()
 
-sf = SidebarFilter(
-    df,
-    min_date=df["month"].min(),
-    select_towns=(True, "multi"),
-    select_lease_years=False,
-)
 
-chart_df = (
-    sf.df.with_columns(
+def add_time_filters(df: pl.DataFrame):
+    df = df.with_columns(
         pl.col("month").dt.quarter().alias("quarter"),
         pl.col("month").dt.year().alias("year"),
     )
-    .group_by(["year", "quarter", "cat_remaining_lease_years"])
-    .agg(pl.median("resale_price").alias("median_resale_price"))
-    .sort(["cat_remaining_lease_years", "year", "quarter"])
-)
 
-# Calculate percentage change
-chart_df = chart_df.with_columns(
-    (
+    df = df.with_columns(
         (
-            pl.col("median_resale_price")
-            / pl.first("median_resale_price").over("cat_remaining_lease_years")
-            - 1
+            pl.concat_str(
+                [
+                    pl.col("year").cast(str),
+                    pl.col("quarter")
+                    .cast(str)
+                    .map_elements(lambda x: f" Q{x}", return_dtype=str),
+                ]
+            ).alias("quarter_label")
         )
-        * 100
-    ).alias("percentage_change")
-)
-
-# Create a new column for quarter labels (e.g., Q1 2022)
-chart_df = chart_df.with_columns(
-    (
-        pl.concat_str(
-            [
-                pl.col("year").cast(str),
-                pl.col("quarter").cast(str).map_elements(lambda x: f" Q{x}"),
-            ]
-        ).alias("quarter_label")
     )
+    return df
+
+
+group_by = st.radio(
+    "Group by:",
+    ("Lease Years", "Town"),
 )
 
-# Plot
-fig = px.line(
-    chart_df,
-    x="quarter_label",
-    y="percentage_change",
-    color="cat_remaining_lease_years",
-    title=f"Percentage Change in Median Resale Price since {sf.start_date}",
-    labels={
-        "percentage_change": "Percentage Change (%)",
-        "quarter_label": "Quarter",
-        "cat_remaining_lease_years": "Remaining Lease Years",
-    },
-)
-
-fig.update_yaxes(ticksuffix="%")
-fig.update_traces(hovertemplate="%{y:.2f}%")
 source = "Source: <a href='https://data.gov.sg/datasets/d_8b84c4ee58e3cfc0ece0d773c8ca6abc/view'>data.gov.sg</a>"
 
-fig.update_layout(
-    hovermode="x unified",
+annotations = dict(
+    margin=dict(l=50, r=50, t=100, b=100),
     annotations=[
         dict(
             x=0.5,
-            y=-0.3,
+            y=-0.31,
             xref="paper",
             yref="paper",
             text=source,
             showarrow=False,
         )
     ],
+    height=500,
 )
 
-st.plotly_chart(fig, use_container_width=True)
+if group_by == "Lease Years":
+    sf = SidebarFilter(
+        df,
+        min_date=df["month"].min(),
+        select_towns=(True, "multi"),
+        select_lease_years=False,
+    )
+
+    chart_df = add_time_filters(sf.df)
+    chart_df = (
+        chart_df.group_by(["quarter_label", "cat_remaining_lease_years"])
+        .agg(pl.median("resale_price").alias("median_resale_price"))
+        .sort(["cat_remaining_lease_years", "quarter_label"])
+    )
+    chart_df = chart_df.with_columns(
+        (
+            (
+                pl.col("median_resale_price")
+                / pl.first("median_resale_price").over("cat_remaining_lease_years")
+                - 1
+            )
+            * 100
+        ).alias("percentage_change")
+    )
+
+    fig = px.line(
+        chart_df,
+        x="quarter_label",
+        y="percentage_change",
+        color="cat_remaining_lease_years",
+        title=f"Percentage Change in Median Resale Price since {str(sf.start_date)[:7]}",
+        labels={
+            "percentage_change": "Percentage Change (%)",
+            "quarter_label": "Quarter",
+            "cat_remaining_lease_years": "Remaining Lease Years",
+        },
+    )
+
+    fig.update_yaxes(ticksuffix="%")
+    fig.update_traces(hovertemplate="%{y:.2f}%")
+
+    fig.update_layout(hovermode="x unified", **annotations)
+    st.plotly_chart(fig, use_container_width=True)
+
+else:
+    sf = SidebarFilter(
+        df,
+        min_date=df["month"].min(),
+        select_towns=(True, "multi"),
+        select_lease_years=False,
+        default_town="ANG MO KIO",
+    )
+
+    chart_df = add_time_filters(sf.df)
+
+    chart_df = (
+        chart_df.group_by(["quarter_label", "town"])
+        .agg(pl.median("resale_price").alias("resale_price"))
+        .sort(["town", "quarter_label"])
+    )
+
+    # Plot for months and towns
+    fig = px.line(
+        chart_df,
+        x="quarter_label",
+        y="resale_price",
+        color="town",
+        labels={"town": "Town"},
+    )
+
+    fig.update_xaxes(tickformat="%Y-%m")
+    fig.update_layout(
+        title="Median Resale Price by Town",
+        xaxis_title="Quarter",
+        yaxis_title="Resale Price",
+        hovermode="x unified",
+        **annotations,
+    )
+    fig.update_traces(
+        line_shape="spline",
+        hovertemplate="$%{y}",
+    )
+
+    st.plotly_chart(fig, use_container_width=True)

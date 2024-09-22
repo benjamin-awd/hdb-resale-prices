@@ -41,11 +41,16 @@ sf = SidebarFilter(
 )
 
 chart_df = (
-    sf.df.group_by(["month", "cat_remaining_lease_years"])
+    sf.df.with_columns(
+        pl.col("month").dt.quarter().alias("quarter"),
+        pl.col("month").dt.year().alias("year"),
+    )
+    .group_by(["year", "quarter", "cat_remaining_lease_years"])
     .agg(pl.median("resale_price").alias("median_resale_price"))
-    .sort(["cat_remaining_lease_years", "month"])
+    .sort(["cat_remaining_lease_years", "year", "quarter"])
 )
 
+# Calculate percentage change
 chart_df = chart_df.with_columns(
     (
         (
@@ -57,20 +62,32 @@ chart_df = chart_df.with_columns(
     ).alias("percentage_change")
 )
 
+# Create a new column for quarter labels (e.g., Q1 2022)
+chart_df = chart_df.with_columns(
+    (
+        pl.concat_str(
+            [
+                pl.col("year").cast(str),
+                pl.col("quarter").cast(str).map_elements(lambda x: f" Q{x}"),
+            ]
+        ).alias("quarter_label")
+    )
+)
+
+# Plot
 fig = px.line(
     chart_df,
-    x="month",
+    x="quarter_label",
     y="percentage_change",
     color="cat_remaining_lease_years",
     title=f"Percentage Change in Median Resale Price since {sf.start_date}",
     labels={
         "percentage_change": "Percentage Change (%)",
-        "month": "Month",
+        "quarter_label": "Quarter",
         "cat_remaining_lease_years": "Remaining Lease Years",
     },
 )
 
-fig.update_xaxes(tickformat="%Y-%m")
 fig.update_yaxes(ticksuffix="%")
 fig.update_traces(hovertemplate="%{y:.2f}%")
 source = "Source: <a href='https://data.gov.sg/datasets/d_8b84c4ee58e3cfc0ece0d773c8ca6abc/view'>data.gov.sg</a>"

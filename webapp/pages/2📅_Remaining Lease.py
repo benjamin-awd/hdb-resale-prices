@@ -45,7 +45,7 @@ bar_fig = px.bar(
     y="cat_remaining_lease_years",
     color="cat_remaining_lease_years",
     orientation="h",
-    labels={"cat_remaining_lease_years": "Remaining Lease Category"},
+    labels={"cat_remaining_lease_years": "Remaining Lease Category", "len": "Count"},
 )
 
 scatter_fig.update_layout(height=600)

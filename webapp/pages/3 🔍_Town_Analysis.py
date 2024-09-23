@@ -10,6 +10,13 @@ from webapp.read import load_dataframe
 st.title("🔍 Town Analysis")
 
 st.write("Look for your potential units by using the filters here!")
+
+st.write(
+    "The `threshold` parameter determines the price category of the resale. "
+    + "A higher `threshold` increases the range for 'Medium' prices and reduces"
+    + "the number of items classified as 'Low' or 'High'."
+)
+
 #################
 ### READ DATA ###
 #################
@@ -21,7 +28,8 @@ df = load_dataframe()
 # filter flat type
 sf = SidebarFilter(df, default_flat_type="2 ROOM")
 
-percentage_threshold = 0.1
+col1, col2 = st.columns(spec=[0.9, 0.2])
+percentage_threshold = col2.number_input("Threshold", 0.0, 1.0, 0.1, step=0.1)
 
 median_resale_price = sf.df["resale_price"].median()
 # Calculate the absolute threshold value based on the percentage
@@ -37,7 +45,9 @@ filtered = sf.df.with_columns(
     .alias("cat_resale_price")
 )
 
-st.write("Median price: ", median_resale_price)
+st.write(
+    f"Median price: `${median_resale_price:,.0f}`",
+)
 # Count the occurrences of each bin
 cat_resale_price = df.group_by("resale_price").agg(pl.len().alias("count"))
 cat_resale_price = cat_resale_price.rename({"resale_price": "Resale Price"})
@@ -50,7 +60,8 @@ cat_resale_price = cat_resale_price.with_columns(
 min_value = int(filtered["resale_price"].min())
 max_value = int(filtered["resale_price"].max())
 
-min_select, max_select = st.slider(
+
+min_select, max_select = col1.slider(
     "Select resale price range ($)",
     int(min_value / 1000),
     int(max_value / 1000),

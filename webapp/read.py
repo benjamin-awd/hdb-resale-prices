@@ -19,7 +19,7 @@ def get_dataframe_from_csv() -> pl.DataFrame:
     """Combine all CSV files in the specified directory into a single DataFrame."""
     data_dir: Path = get_project_root() / "data"
 
-    df = pl.read_csv(data_dir / "*.csv", schema=schema, null_values="NIL")
+    df = pl.read_csv(data_dir / "*.csv", schema=schema)
     return df
 
 

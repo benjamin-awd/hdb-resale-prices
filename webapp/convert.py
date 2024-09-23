@@ -20,7 +20,7 @@ def csv_to_parquet() -> pl.DataFrame:
     """Combine all CSV files in the specified directory into a single parquet file"""
     data_dir: Path = get_project_root() / "data"
 
-    df = pl.read_csv(data_dir / "*.csv", schema=schema, null_values="NIL")
+    df = pl.read_csv(data_dir / "*.csv", schema=schema)
 
     df = df.with_columns(
         (

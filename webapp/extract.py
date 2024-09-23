@@ -39,18 +39,35 @@ def get_data(start_date="2019-01", end_date=pd.Timestamp.now().strftime("%Y-%m")
     return df.reset_index(drop=True)
 
 
+def fetch_osm_postal(query_address, session: requests.Session):
+    query_string = f"https://nominatim.openstreetmap.org/search?q={query_address}&format=json&addressdetails=1"
+
+    response = session.get(query_string).json()
+
+    if not response:
+        return None
+
+    return response[0]["address"].get("postcode", None)
+
+
 def fetch_map_data(query_address, session: requests.Session):
     query_string = (
         "https://www.onemap.gov.sg/api/common/elastic/search?&searchVal="
-        + str(query_address)
+        + query_address
         + "&returnGeom=Y&getAddrDetails=Y"
     )
 
     response = session.get(query_string).json()["results"][0]
 
+    if response:
+        postal_code = response["POSTAL"]
+        # use open street map if postal code is null or invalid
+        if len(str(postal_code)) < 6:
+            postal_code = fetch_osm_postal(query_address, session)
+
     return {
         "address": query_address,
-        "postal": response["POSTAL"],
+        "postal": postal_code,
         "latitude": response["LATITUDE"],
         "longitude": response["LONGITUDE"],
     }
@@ -95,7 +112,6 @@ def load_existing_data(file_path: Path) -> pd.DataFrame:
                 "latitude": float,
                 "longitude": float,
             },
-            na_values=["NIL", "NA"],
         )
 
         return df
@@ -160,13 +176,33 @@ def process_month(month: str, data_dir: Path, should_process: bool = False):
 
             print(f"Processing complete for {month}")
 
-    final_data = pd.concat(
+    df = pd.concat(
         [existing_data, new_data if not new_data.empty else None], ignore_index=True
     )
 
-    print(f"Total number of observations for {month}: {final_data.shape[0]}")
-    final_data.sort_values(by="_id", ascending=False)
-    final_data.to_csv(file_path, index=False)
+    print(f"Total number of observations for {month}: {df.shape[0]}")
+    df.sort_values(by="_id", ascending=False)
+    df = df.astype(
+        {
+            "_id": int,
+            "month": str,
+            "town": str,
+            "flat_type": str,
+            "block": str,
+            "street_name": str,
+            "storey_range": str,
+            "floor_area_sqm": float,
+            "flat_model": str,
+            "lease_commence_date": int,
+            "remaining_lease": str,
+            "resale_price": float,
+            "address": str,
+            "postal": int,
+            "latitude": float,
+            "longitude": float,
+        }
+    )
+    df.to_csv(file_path, index=False)
 
 
 def get_timestamps() -> tuple[str, str]:

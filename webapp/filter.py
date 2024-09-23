@@ -16,7 +16,7 @@ class SidebarFilter:
         default_town=None,
     ):
         self.df = df
-        self.min_date = min_date or self.df["month"].max() - relativedelta(months=24)
+        self.min_date = min_date or self.df["month"].max() - relativedelta(months=12)
         self.max_date = max_date or self.df["month"].max()
         self.selected_towns = []
         self.default_flat_type = default_flat_type

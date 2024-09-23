@@ -1,6 +1,7 @@
 import folium
 import polars as pl
 import streamlit as st
+from dateutil.relativedelta import relativedelta
 from PIL import Image
 from streamlit_folium import st_folium
 
@@ -26,7 +27,10 @@ df = load_dataframe()
 ### SELECTIONS ###
 ##################
 # filter flat type
-sf = SidebarFilter(df, default_flat_type="2 ROOM")
+sf = SidebarFilter(
+    df,
+    default_flat_type="2 ROOM",
+)
 
 col1, col2 = st.columns(spec=[0.9, 0.2])
 percentage_threshold = col2.number_input("Threshold", 0.0, 1.0, 0.1, step=0.1)

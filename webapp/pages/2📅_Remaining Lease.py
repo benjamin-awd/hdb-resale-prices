@@ -23,6 +23,7 @@ scatter_fig = px.scatter(
     labels={
         "remaining_lease_years": "Remaining Lease Years",
         "resale_price": "Resale Price",
+        "cat_remaining_lease_years": "Remaining Lease Category",
     },
 )
 

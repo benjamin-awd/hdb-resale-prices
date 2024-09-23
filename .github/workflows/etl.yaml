@@ -27,7 +27,6 @@ jobs:
       run: |
         source .venv/bin/activate
         python webapp/etl.py
-      continue-on-error: true
 
     - name: Check for changes in data/*.csv
       id: check_changes

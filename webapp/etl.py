@@ -16,10 +16,7 @@ def main():
 
     if has_changed:
         print("Changes detected")
-        sys.exit(0)
-    else:
-        print("No changes")
-        sys.exit(1)
+    sys.exit(0)
 
 
 if __name__ == "__main__":

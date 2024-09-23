@@ -46,10 +46,13 @@ bar_fig = px.bar(
     color="cat_remaining_lease_years",
     orientation="h",
     labels={"cat_remaining_lease_years": "Remaining Lease Category", "len": "Count"},
+    text="len",
 )
 
 scatter_fig.update_layout(height=600)
 bar_fig.update_layout(height=250)
+bar_fig.update_traces(textposition="outside", selector=dict(type="bar"))
+
 
 st.plotly_chart(scatter_fig, use_container_width=True)
 st.plotly_chart(bar_fig, use_container_width=True)

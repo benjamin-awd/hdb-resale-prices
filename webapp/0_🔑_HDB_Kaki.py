@@ -29,7 +29,9 @@ st.image(last_updated_badge)
 
 st.markdown("## Resale Visualizations")
 
-st.markdown("Make better decisions using the latest HDB resale market movements")
+st.markdown(
+    "HDB Kaki keeps you ahead with real-time updates and data-driven insights on the HDB resale market."
+)
 
 df = load_dataframe()
 

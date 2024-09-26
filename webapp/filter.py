@@ -45,9 +45,10 @@ class SidebarFilter:
             self.df = self.df.filter(pl.col("town").is_in(self.selected_towns))
 
         if select_lease_years:
-            select_lease = self.create_lease_select()
+            start_year, end_year = self.create_lease_select()
             self.df = self.df.filter(
-                pl.col("cat_remaining_lease_years") == select_lease
+                (pl.col("remaining_lease_years") >= start_year)
+                & (pl.col("remaining_lease_years") <= end_year)
             )
 
     def hide_elements(self):
@@ -112,7 +113,9 @@ class SidebarFilter:
         )
 
     def create_lease_select(self):
-        return st.sidebar.selectbox(
+        return st.sidebar.slider(
             "Select remaining lease years",
-            sorted(list(self.df["cat_remaining_lease_years"].unique())),
+            min_value=self.df["remaining_lease_years"].min(),
+            max_value=self.df["remaining_lease_years"].max(),
+            value=(81, 99),
         )

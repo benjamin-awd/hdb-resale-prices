@@ -1,7 +1,6 @@
 import folium
 import polars as pl
 import streamlit as st
-from dateutil.relativedelta import relativedelta
 from PIL import Image
 from streamlit_folium import st_folium
 
@@ -95,6 +94,7 @@ sg_map = folium.Map(
     location=[latitude, longitude],
     zoom_start=2,
     attr="OpenStreetMap",
+    prefer_canvas=True,
 )
 for month, lat, lon, address, town, price, lease, level, cat_resale_price in zip(
     filtered_sub["month"],

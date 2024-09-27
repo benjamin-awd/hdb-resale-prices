@@ -5,6 +5,7 @@ import polars as pl
 import streamlit as st
 from PIL import Image
 from streamlit_folium import st_folium
+from streamlit_searchbox import st_searchbox
 
 from webapp.filter import SidebarFilter
 from webapp.read import load_dataframe
@@ -161,4 +162,39 @@ try:
 
 except TypeError as error:
     logging.debug(error)
-    st.warning(f"No data found for this combination of settings")
+    st.warning("No data found for this combination of settings")
+
+
+def search_streets(searchterm: str) -> list[str]:
+    if not searchterm:
+        return []
+
+    searchterm_upper = searchterm.upper()
+    unique_streets: list[str] = df["street_name"].unique().to_list()
+
+    matches = [
+        street for street in unique_streets if street.startswith(searchterm_upper)
+    ]
+
+    return matches
+
+
+@st.fragment
+def town_search():
+    st.markdown("**Find a town based on a street name**")
+    selected_value = st_searchbox(
+        search_streets,
+        rerun_scope="fragment",
+        key="street_searchbox",
+        placeholder="Search for a street name",
+    )
+
+    if selected_value:
+        town_row = (
+            df.filter(pl.col("street_name") == selected_value).select("town").unique()
+        )
+        town = town_row[0, 0]
+        st.write(f"Town: {town}")
+
+
+town_search()

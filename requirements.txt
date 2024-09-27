@@ -845,6 +845,9 @@ smmap==5.0.1 ; python_version >= "3.12" and python_version < "3.13" \
 streamlit-folium==0.22.1 ; python_version >= "3.12" and python_version < "3.13" \
     --hash=sha256:bcf62d674eb26e761585e74d2d0b8801fd85693bf9b330402cbdb67803b295bb \
     --hash=sha256:f3885215ad068bdba5c7621f3d11009d517f239d8d640073b77d16205f275764
+streamlit-searchbox==0.1.17 ; python_version >= "3.12" and python_version < "3.13" \
+    --hash=sha256:8f623eaf38ecb8edde30afeec6c0c388607d897ba1bd88b97798bfbaa9cd0aed \
+    --hash=sha256:f0ae4c1f75f3690c00fd4333a0f2d6c132ab92a26127fbc38ecaea1c6ac4d0f6
 streamlit==1.38.0 ; python_version >= "3.12" and python_version < "3.13" \
     --hash=sha256:0653ecfe86fef0f1608e3e082aef7eb335d8713f6f31e9c3b19486d1c67d7c41 \
     --hash=sha256:c4bf36b3ef871499ed4594574834583113f93f077dd3035d516d295786f2ad63

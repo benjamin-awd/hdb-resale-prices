@@ -1702,6 +1702,24 @@ jinja2 = "*"
 streamlit = ">=1.13.0"
 
 [[package]]
+name = "streamlit-searchbox"
+version = "0.1.17"
+description = "Autocomplete Searchbox"
+optional = false
+python-versions = "!=3.9.7,>=3.8"
+files = [
+    {file = "streamlit_searchbox-0.1.17-py3-none-any.whl", hash = "sha256:f0ae4c1f75f3690c00fd4333a0f2d6c132ab92a26127fbc38ecaea1c6ac4d0f6"},
+    {file = "streamlit_searchbox-0.1.17.tar.gz", hash = "sha256:8f623eaf38ecb8edde30afeec6c0c388607d897ba1bd88b97798bfbaa9cd0aed"},
+]
+
+[package.dependencies]
+streamlit = ">=1.0"
+
+[package.extras]
+dev = ["black", "isort", "pre-commit", "pyright", "ruff"]
+tests = ["pytest", "pytest-playwright", "wikipedia"]
+
+[[package]]
 name = "tenacity"
 version = "8.5.0"
 description = "Retry code until it succeeds"
@@ -1878,4 +1896,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.13"
-content-hash = "ad653581c4531f7e560e2d3e9d68fea2698615ca06caa08e30e07e76d4add409"
+content-hash = "6b50881c492598dbd81da9fed5064f817d80d269c16d922cf1bf836ddf2c0382"

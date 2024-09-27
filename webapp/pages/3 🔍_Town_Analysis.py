@@ -1,3 +1,5 @@
+import logging
+
 import folium
 import polars as pl
 import streamlit as st
@@ -157,5 +159,6 @@ try:
         key="download-csv",
     )
 
-except TypeError:
+except TypeError as error:
+    logging.debug(error)
     st.warning(f"No data found for this combination of settings")

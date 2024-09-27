@@ -17,14 +17,8 @@ st.write(
     + " the number of items classified as 'Low' or 'High'."
 )
 
-#################
-### READ DATA ###
-#################
 df = load_dataframe()
 
-##################
-### SELECTIONS ###
-##################
 # filter flat type
 sf = SidebarFilter(
     df,
@@ -75,16 +69,11 @@ try:
     ####################
     ### MAP PLOTTING ###
     ####################
-    # filter selection according to range
     filtered_sub = filtered.filter(
         (pl.col("resale_price") >= min_select * 1000)
         & (pl.col("resale_price") <= max_select * 1000)
     )
 
-    # st.write("**Low (<40th percentile):**", cat_resale_price['Resale Price'][0])
-    # st.write("**Medium (40th to 60th percentile):**", cat_resale_price['Resale Price'][1])
-    # st.write("**High (>60th percentile):**", cat_resale_price['Resale Price'][2])
-    # plot map
     latitude = 1.3521
     longitude = 103.8198
 
@@ -156,9 +145,6 @@ try:
 
     st_data = st_folium(sg_map, width=1000, use_container_width=True)
 
-    ########################
-    ###  DOWNLOAD DATA  ####
-    ########################
     def convert_df(df: pl.DataFrame):
         return df.write_csv().encode("utf-8")
 

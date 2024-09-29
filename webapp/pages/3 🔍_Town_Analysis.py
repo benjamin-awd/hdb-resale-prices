@@ -15,10 +15,12 @@ st.set_page_config(layout="wide")
 
 st.title("🔍 Town Analysis")
 
-st.write("Look for your potential units by using the filters here!")
+st.write(
+    "To view all historical transactions within the date range, click on the `Show all transactions` checkbox."
+)
 
 st.write(
-    "The `threshold` parameter determines the price category of the resale. "
+    "Note: The `threshold` parameter determines the price category of the resale. "
     + "A higher `threshold` increases the range for 'Medium' prices and reduces"
     + " the number of items classified as 'Low' or 'High'."
 )

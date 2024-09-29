@@ -32,11 +32,3 @@ repos:
       - id: ruff
         entry: ruff check
         args: [ --fix ]
-
-  - repo: local
-    hooks:
-      - id: include-webapp-in-requirements
-        name: poetry-export (webapp)
-        entry: .github/hooks/include_webapp_in_requirements.sh
-        language: script
-        files: ^(requirements.txt|poetry.lock)$

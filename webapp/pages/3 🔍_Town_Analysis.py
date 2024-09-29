@@ -16,7 +16,7 @@ st.set_page_config(layout="wide")
 st.title("🔍 Town Analysis")
 
 st.write(
-    "To view all historical transactions within the date range, click on the `Show all transactions` checkbox."
+    "To view only the latest transactions within the date range, click on the `Show all transactions` toggle."
 )
 
 st.write(
@@ -36,7 +36,7 @@ sf = SidebarFilter(
 col1, col2 = st.columns(spec=[0.9, 0.2])
 percentage_threshold = col2.number_input("Threshold", 0.0, 1.0, 0.1, step=0.1)
 
-show_all = st.sidebar.checkbox("Show all transactions", value=True)
+show_all = st.sidebar.toggle("Show all transactions", value=True)
 
 try:
     median_resale_price = sf.df["resale_price"].median()

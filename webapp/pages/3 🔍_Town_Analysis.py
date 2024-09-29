@@ -3,6 +3,7 @@ import logging
 import folium
 import polars as pl
 import streamlit as st
+from folium.plugins import MarkerCluster
 from PIL import Image
 from streamlit_folium import st_folium
 from streamlit_searchbox import st_searchbox
@@ -30,6 +31,8 @@ sf = SidebarFilter(
 
 col1, col2 = st.columns(spec=[0.9, 0.2])
 percentage_threshold = col2.number_input("Threshold", 0.0, 1.0, 0.1, step=0.1)
+
+show_latest = st.sidebar.checkbox("Show latest transactions only", value=False)
 
 try:
     median_resale_price = sf.df["resale_price"].median()
@@ -86,6 +89,13 @@ try:
         attr="OpenStreetMap",
         prefer_canvas=True,
     )
+
+    marker_cluster = MarkerCluster().add_to(sg_map)
+
+    folium_object = sg_map
+    if not show_latest:
+        folium_object = marker_cluster
+
     for month, lat, lon, address, town, price, lease, level, cat_resale_price in zip(
         filtered_sub["month"],
         filtered_sub["latitude"],
@@ -124,7 +134,7 @@ try:
             popup=popup,
             icon=folium.Icon(color=color, icon="home", prefix="fa"),
             tooltip=html,
-        ).add_to(sg_map)
+        ).add_to(folium_object)
 
     sw = (
         filtered.select([pl.col("latitude").min(), pl.col("longitude").min()])

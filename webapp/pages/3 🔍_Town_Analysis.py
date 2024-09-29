@@ -11,6 +11,8 @@ from streamlit_searchbox import st_searchbox
 from webapp.filter import SidebarFilter
 from webapp.read import load_dataframe
 
+st.set_page_config(layout="wide")
+
 st.title("🔍 Town Analysis")
 
 st.write("Look for your potential units by using the filters here!")
@@ -158,21 +160,40 @@ try:
 
     st_data = st_folium(sg_map, width=1000, use_container_width=True)
 
-    def convert_df(df: pl.DataFrame):
-        return df.write_csv().encode("utf-8")
-
-    csv = convert_df(filtered_sub)
-    st.download_button(
-        "Download Filtered Data",
-        csv,
-        "filtered_data.csv",
-        "text/csv",
-        key="download-csv",
-    )
-
 except TypeError as error:
     logging.debug(error)
     st.warning("No data found for this combination of settings")
+
+
+def convert_df(df: pl.DataFrame):
+    return df.write_csv().encode("utf-8")
+
+
+csv = convert_df(filtered_sub)
+st.download_button(
+    "Download Filtered Data",
+    csv,
+    "filtered_data.csv",
+    "text/csv",
+    key="download-csv",
+)
+
+
+simple_df = filtered.select(
+    pl.col("month").dt.strftime("%Y-%m").alias("month_sold"),
+    "town",
+    "flat_type",
+    "address",
+    "resale_price",
+    pl.col("lease_commence_date").cast(str),
+    "remaining_lease",
+    "cat_resale_price",
+)
+
+st.write("")
+st.write("Data points as shown on map:")
+
+st.dataframe(simple_df, use_container_width=True)
 
 
 def search_streets(searchterm: str) -> list[str]:

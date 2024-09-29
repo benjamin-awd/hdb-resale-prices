@@ -34,7 +34,7 @@ sf = SidebarFilter(
 col1, col2 = st.columns(spec=[0.9, 0.2])
 percentage_threshold = col2.number_input("Threshold", 0.0, 1.0, 0.1, step=0.1)
 
-show_latest = st.sidebar.checkbox("Show last transaction only", value=False)
+show_all = st.sidebar.checkbox("Show all transactions", value=True)
 
 try:
     median_resale_price = sf.df["resale_price"].median()
@@ -95,7 +95,7 @@ try:
     marker_cluster = MarkerCluster().add_to(sg_map)
 
     folium_object = sg_map
-    if not show_latest:
+    if show_all:
         folium_object = marker_cluster
 
     for month, lat, lon, address, town, price, lease, level, cat_resale_price in zip(

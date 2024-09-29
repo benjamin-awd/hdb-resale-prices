@@ -102,7 +102,7 @@ if group_by == "Lease Years":
             )
             * 100
         ).alias("percentage_change")
-    )
+    ).sort(by="quarter_label")
 
     fig = px.line(
         chart_df,
@@ -138,7 +138,7 @@ else:
         chart_df.group_by(["quarter_label", "town"])
         .agg(pl.median("resale_price").alias("resale_price"))
         .sort(["town", "quarter_label"])
-    )
+    ).sort(by="quarter_label")
 
     # Plot for months and towns
     fig = px.line(

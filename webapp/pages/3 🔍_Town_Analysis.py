@@ -160,7 +160,7 @@ try:
 
     st.image(image)
 
-    st_data = st_folium(sg_map, width=1000, use_container_width=True)
+    st_data = st_folium(sg_map, use_container_width=True)
 
 except TypeError as error:
     logging.debug(error)

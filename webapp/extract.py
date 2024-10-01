@@ -35,6 +35,9 @@ def get_data(start_date="2019-01", end_date=pd.Timestamp.now().strftime("%Y-%m")
         all_items.extend(res)
 
     df = pd.DataFrame(all_items)
+    if df.empty:
+        return pd.DataFrame()
+    
     df["address"] = df["block"] + " " + df["street_name"]
     return df.reset_index(drop=True)
 
@@ -116,7 +119,7 @@ def load_existing_data(file_path: Path) -> pd.DataFrame:
 
         return df
 
-    return None
+    return pd.DataFrame()
 
 
 def skip_process(file_path: Path, should_process: bool) -> bool:
@@ -151,59 +154,58 @@ def process_month(month: str, data_dir: Path, should_process: bool = False):
     new_data = get_data(start_date=month, end_date=month)
     existing_data = load_existing_data(file_path)
 
-    if existing_data is not None:
-        if not existing_data.empty:
-            existing_addresses = set(existing_data["address"])
-            new_data = new_data[~new_data["address"].isin(existing_addresses)]
+    if not existing_data.empty:
+        existing_addresses = set(existing_data["address"])
+        new_data = new_data[~new_data["address"].isin(existing_addresses)]
 
     if not new_data.empty:
         print(f"Fetching latitude and longitude for new addresses in {month}")
         new_map_data = get_map_results(new_data)
         new_data = new_data.merge(new_map_data, on="address", how="left")
 
-    if existing_data is not None:
-        if not existing_data.empty:
-            missing_lat_lon = (
-                existing_data[["latitude", "longitude"]].isna().any(axis=1)
+    if not existing_data.empty:
+        missing_lat_lon = (
+            existing_data[["latitude", "longitude"]].isna().any(axis=1)
+        )
+        if missing_lat_lon.any():
+            print(
+                f"Updating missing latitude and longitude for existing addresses in {month}"
             )
-            if missing_lat_lon.any():
-                print(
-                    f"Updating missing latitude and longitude for existing addresses in {month}"
-                )
-                addresses_to_update = existing_data[missing_lat_lon]
-                updated_map_data = get_map_results(addresses_to_update)
-                existing_data.update(updated_map_data)
+            addresses_to_update = existing_data[missing_lat_lon]
+            updated_map_data = get_map_results(addresses_to_update)
+            existing_data.update(updated_map_data)
 
-            print(f"Processing complete for {month}")
+        print(f"Processing complete for {month}")
+    
+    if not any([existing_data.empty and new_data.empty]):
+        df = pd.concat(
+            [existing_data, new_data if not new_data.empty else None], ignore_index=True
+        )
 
-    df = pd.concat(
-        [existing_data, new_data if not new_data.empty else None], ignore_index=True
-    )
-
-    print(f"Total number of observations for {month}: {df.shape[0]}")
-    df.sort_values(by="_id", ascending=False)
-    df = df.astype(
-        {
-            "_id": int,
-            "month": str,
-            "town": str,
-            "flat_type": str,
-            "block": str,
-            "street_name": str,
-            "storey_range": str,
-            "floor_area_sqm": float,
-            "flat_model": str,
-            "lease_commence_date": int,
-            "remaining_lease": str,
-            "resale_price": float,
-            "address": str,
-            "postal": int,
-            "latitude": float,
-            "longitude": float,
-        }
-    )
-    df.to_csv(file_path, index=False)
-
+        print(f"Total number of observations for {month}: {df.shape[0]}")
+        df.sort_values(by="_id", ascending=False)
+        df = df.astype(
+            {
+                "_id": int,
+                "month": str,
+                "town": str,
+                "flat_type": str,
+                "block": str,
+                "street_name": str,
+                "storey_range": str,
+                "floor_area_sqm": float,
+                "flat_model": str,
+                "lease_commence_date": int,
+                "remaining_lease": str,
+                "resale_price": float,
+                "address": str,
+                "postal": int,
+                "latitude": float,
+                "longitude": float,
+            }
+        )
+        df.to_csv(file_path, index=False)
+    return None
 
 def get_timestamps() -> tuple[str, str]:
     current_timestamp = datetime.now()

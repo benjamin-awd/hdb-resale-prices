@@ -2,7 +2,6 @@ import plotly.express as px
 import streamlit as st
 
 from webapp.filter import SidebarFilter
-from webapp.read import load_dataframe
 
 st.set_page_config(layout="wide")
 
@@ -11,8 +10,7 @@ st.title("📅 Remaining Lease")
 st.write(
     "Find out the relationship of resale prices and remaining lease years in the various towns and flat type"
 )
-df = load_dataframe()
-sf = SidebarFilter(df, select_lease_years=False, default_flat_type="4 ROOM")
+sf = SidebarFilter(select_lease_years=False, default_flat_type="4 ROOM")
 
 scatter_fig = px.scatter(
     sf.df,

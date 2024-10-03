@@ -6,10 +6,8 @@ import streamlit as st
 from folium.plugins import MarkerCluster
 from PIL import Image
 from streamlit_folium import st_folium
-from streamlit_searchbox import st_searchbox
 
 from webapp.filter import SidebarFilter
-from webapp.read import load_dataframe
 
 st.set_page_config(layout="wide")
 
@@ -25,11 +23,8 @@ st.write(
     + " the number of items classified as 'Low' or 'High'."
 )
 
-df = load_dataframe()
-
 # filter flat type
 sf = SidebarFilter(
-    df,
     default_flat_type="4 ROOM",
 )
 
@@ -57,7 +52,7 @@ try:
         f"Median price: `${median_resale_price:,.0f}`",
     )
     # Count the occurrences of each bin
-    cat_resale_price = df.group_by("resale_price").agg(pl.len().alias("count"))
+    cat_resale_price = sf.df.group_by("resale_price").agg(pl.len().alias("count"))
     cat_resale_price = cat_resale_price.rename({"resale_price": "Resale Price"})
 
     cat_resale_price = cat_resale_price.with_columns(
@@ -196,38 +191,3 @@ st.write("")
 st.write("Data points as shown on map:")
 
 st.dataframe(simple_df, use_container_width=True)
-
-
-def search_streets(searchterm: str) -> list[str]:
-    if not searchterm:
-        return []
-
-    searchterm_upper = searchterm.upper()
-    unique_streets: list[str] = df["street_name"].unique().to_list()
-
-    matches = [
-        street for street in unique_streets if street.startswith(searchterm_upper)
-    ]
-
-    return matches
-
-
-@st.fragment
-def town_search():
-    st.markdown("**Find a town based on a street name**")
-    selected_value = st_searchbox(
-        search_streets,
-        rerun_scope="fragment",
-        key="street_searchbox",
-        placeholder="Search for a street name",
-    )
-
-    if selected_value:
-        town_row = (
-            df.filter(pl.col("street_name") == selected_value).select("town").unique()
-        )
-        town = town_row[0, 0]
-        st.write(f"Town: {town}")
-
-
-town_search()

@@ -2,11 +2,13 @@ import polars as pl
 import streamlit as st
 from dateutil.relativedelta import relativedelta
 
+from webapp.read import load_dataframe
+
 
 class SidebarFilter:
     def __init__(
         self,
-        df: pl.DataFrame,
+        df: pl.DataFrame = load_dataframe(),
         min_date=None,
         max_date=None,
         select_flat_type=True,

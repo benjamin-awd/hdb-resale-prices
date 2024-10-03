@@ -82,7 +82,7 @@ annotations = dict(
 if group_by == "Lease Years":
     sf = SidebarFilter(
         df,
-        min_date=df["month"].min(),
+        min_date=datetime.strptime("2017-01-01", "%Y-%m-%d").date(),
         select_towns=(True, "multi"),
         select_lease_years=False,
     )

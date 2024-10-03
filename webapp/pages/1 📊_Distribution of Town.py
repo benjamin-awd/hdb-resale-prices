@@ -3,7 +3,6 @@ import plotly.express as px
 import streamlit as st
 
 from webapp.filter import SidebarFilter
-from webapp.read import load_dataframe
 
 st.set_page_config(layout="wide")
 
@@ -11,9 +10,8 @@ st.title("📊 Distribution of Resale Price")
 st.write(
     "Find out how much you will need approximately for buying a flat in the respective towns."
 )
-df = load_dataframe()
 
-sf = SidebarFilter(df, select_towns=(False, ""), default_flat_type="4 ROOM")
+sf = SidebarFilter(select_towns=(False, ""), default_flat_type="4 ROOM")
 
 # Generate a rainbow color palette
 towns = sf.df["town"].unique()

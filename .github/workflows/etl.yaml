@@ -26,7 +26,7 @@ jobs:
       id: etl
       run: |
         source .venv/bin/activate
-        python webapp/etl.py
+        python webapp/update/etl.py
 
     - name: Check for changes in data/*.csv
       id: check_changes

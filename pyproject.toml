@@ -30,7 +30,7 @@ isort = "^5.13.2"
 pylint = "^3.1.0"
 
 [tool.poetry.scripts]
-extract = "webapp.extract:extract"
+extract = "webapp.update.extract:extract"
 
 [build-system]
 requires = ["poetry-core"]

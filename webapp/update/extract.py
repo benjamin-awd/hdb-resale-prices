@@ -37,7 +37,7 @@ def get_data(start_date="2019-01", end_date=pd.Timestamp.now().strftime("%Y-%m")
     df = pd.DataFrame(all_items)
     if df.empty:
         return pd.DataFrame()
-    
+
     df["address"] = df["block"] + " " + df["street_name"]
     return df.reset_index(drop=True)
 
@@ -164,9 +164,7 @@ def process_month(month: str, data_dir: Path, should_process: bool = False):
         new_data = new_data.merge(new_map_data, on="address", how="left")
 
     if not existing_data.empty:
-        missing_lat_lon = (
-            existing_data[["latitude", "longitude"]].isna().any(axis=1)
-        )
+        missing_lat_lon = existing_data[["latitude", "longitude"]].isna().any(axis=1)
         if missing_lat_lon.any():
             print(
                 f"Updating missing latitude and longitude for existing addresses in {month}"
@@ -176,7 +174,7 @@ def process_month(month: str, data_dir: Path, should_process: bool = False):
             existing_data.update(updated_map_data)
 
         print(f"Processing complete for {month}")
-    
+
     if not any([existing_data.empty and new_data.empty]):
         df = pd.concat(
             [existing_data, new_data if not new_data.empty else None], ignore_index=True
@@ -206,6 +204,7 @@ def process_month(month: str, data_dir: Path, should_process: bool = False):
         )
         df.to_csv(file_path, index=False)
     return None
+
 
 def get_timestamps() -> tuple[str, str]:
     current_timestamp = datetime.now()

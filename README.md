@@ -1,6 +1,6 @@
 <img src="./assets/logo.svg" width="396" height="91">
 
-HDB Kaki keeps you ahead with real-time updates and data-driven insights on the HDB resale market.
+HDB Kaki helps you stay updated on the latest movements in the HDB resale market.
 
 <h3 align="center">
     🔑 Try it out: <br>

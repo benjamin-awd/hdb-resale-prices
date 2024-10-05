@@ -163,3 +163,19 @@ else:
     )
 
     st.plotly_chart(fig, use_container_width=True)
+
+
+st.markdown("### Download")
+st.write(
+    "Download the full dataset for resale flat prices based on registration date from Jan-2017 onwards"
+)
+st.write(
+    "Note: the original dataset can be found here: [data.gov.sg](https://data.gov.sg/datasets/d_8b84c4ee58e3cfc0ece0d773c8ca6abc/view)."
+)
+st.download_button(
+    "Download CSV",
+    df.sort(by="_id").write_csv(),
+    "hdb_resale_data.csv",
+    "text/csv",
+    key="download-csv",
+)

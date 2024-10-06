@@ -1,19 +1,16 @@
-# ruff:  noqa: E402
-import streamlit as st
-
-from webapp.logo import icon, logo
-
-st.set_page_config(page_title="HDB Kaki", page_icon=icon, layout="wide")
-
 from datetime import datetime
 
 import plotly.express as px
 import plotly.graph_objects as go
 import polars as pl
+import streamlit as st
 from plotly.subplots import make_subplots
 
 from webapp.filter import SidebarFilter
+from webapp.logo import icon, logo
 from webapp.read import get_last_updated_badge, load_dataframe
+
+st.set_page_config(page_title="HDB Kaki", page_icon=icon, layout="wide")
 
 st.image(logo, width=500)
 

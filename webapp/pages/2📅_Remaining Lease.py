@@ -17,7 +17,13 @@ scatter_fig = px.scatter(
     x="remaining_lease_years",
     y="resale_price",
     color="cat_remaining_lease_years",
-    hover_data=["remaining_lease_years", "resale_price"],
+    hover_data=[
+        "remaining_lease_years",
+        "resale_price",
+        "address",
+        "storey_range",
+        "month",
+    ],
     labels={
         "remaining_lease_years": "Remaining Lease Years",
         "resale_price": "Resale Price",
@@ -33,6 +39,11 @@ scatter_fig.update_traces(
         line=dict(width=1.5),
     ),
     selector=dict(mode="markers"),
+    hovertemplate="<b>Price:</b> $%{y:,.3s}<br>"
+    + "<b>Lease Years:</b> %{x} years<br>"
+    + "<b>Address:</b> %{customdata[0]}<br>"
+    + "<b>Storey:</b> %{customdata[1]}<br>"
+    + "<b>Sold:</b> %{customdata[2]|%Y-%m}<br>",
 )
 
 bar_fig = px.bar(

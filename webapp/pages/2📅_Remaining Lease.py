@@ -13,7 +13,7 @@ st.write(
 sf = SidebarFilter(select_lease_years=False, default_flat_type="4 ROOM")
 
 scatter_fig = px.scatter(
-    sf.df,
+    sf.df.sort(by="cat_remaining_lease_years"),
     x="remaining_lease_years",
     y="resale_price",
     color="cat_remaining_lease_years",

@@ -1,8 +1,24 @@
+from datetime import datetime
 from pathlib import Path
 
 import polars as pl
+from pybadges import badge
 
 from webapp.utils import get_project_root
+
+
+def get_last_updated_badge():
+    data_dir = get_project_root() / "data"
+    with open(data_dir / "metadata") as file:
+        content = int(file.read())
+        last_updated = datetime.fromtimestamp(content)
+
+    return badge(
+        left_text="last updated",
+        right_text=last_updated.isoformat()[:10],
+        left_color="#555",
+        right_color="#007ec6",
+    )
 
 
 def convert_lease(x):

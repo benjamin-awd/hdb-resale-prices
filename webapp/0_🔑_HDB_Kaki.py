@@ -3,30 +3,18 @@ from datetime import datetime
 import plotly.express as px
 import plotly.graph_objects as go
 import polars as pl
-import pybadges
 import streamlit as st
 from plotly.subplots import make_subplots
 
 from webapp.filter import SidebarFilter
 from webapp.logo import icon, logo
-from webapp.read import load_dataframe
-from webapp.utils import get_project_root
+from webapp.read import get_last_updated_badge, load_dataframe
 
 st.set_page_config(page_title="HDB Kaki", page_icon=icon, layout="wide")
 
 st.image(logo, width=500)
 
-data_dir = get_project_root() / "data"
-with open(data_dir / "metadata") as file:
-    content = int(file.read())
-    last_updated = datetime.fromtimestamp(content)
-
-last_updated_badge = pybadges.badge(
-    left_text="last updated",
-    right_text=last_updated.isoformat()[:10],
-    left_color="#555",
-    right_color="#007ec6",
-)
+last_updated_badge = get_last_updated_badge()
 st.image(last_updated_badge)
 
 st.markdown("## Resale Visualizations")

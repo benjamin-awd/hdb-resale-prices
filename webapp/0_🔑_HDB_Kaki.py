@@ -1,9 +1,11 @@
 from datetime import datetime
 
 import plotly.express as px
+import plotly.graph_objects as go
 import polars as pl
 import pybadges
 import streamlit as st
+from plotly.subplots import make_subplots
 
 from webapp.filter import SidebarFilter
 from webapp.logo import icon, logo
@@ -131,35 +133,76 @@ else:
         select_lease_years=False,
         default_town="ANG MO KIO",
     )
+    show_transaction_volumes = st.sidebar.checkbox(
+        "Show transaction volumes", value=False
+    )
 
     chart_df = add_time_filters(sf.df)
 
     chart_df = (
-        chart_df.group_by(["quarter_label", "town"])
-        .agg(pl.median("resale_price").alias("resale_price"))
-        .sort(["town", "quarter_label"])
-    ).sort(by="quarter_label")
+        chart_df.group_by(["quarter_label", "town"]).agg(
+            pl.median("resale_price").alias("resale_price"),
+            pl.count("resale_price").alias("transaction_volume"),
+        )
+    ).sort(["town", "quarter_label"])
 
-    # Plot for months and towns
-    fig = px.line(
-        chart_df,
-        x="quarter_label",
-        y="resale_price",
-        color="town",
-        labels={"town": "Town"},
+    fig = make_subplots(
+        rows=1,
+        cols=1,
+        specs=[[{"secondary_y": True}]],
     )
+
+    for town in chart_df["town"].unique().sort():
+        town_df = chart_df.filter(pl.col("town") == town)
+
+        fig.add_trace(
+            go.Scatter(
+                x=town_df["quarter_label"],
+                y=town_df["resale_price"],
+                mode="lines",
+                name=town,
+                hovertemplate="$%{y}",
+                line=dict(shape="spline"),
+            ),
+            secondary_y=False,
+        )
+
+        if show_transaction_volumes:
+            fig.add_trace(
+                go.Bar(
+                    x=town_df["quarter_label"],
+                    y=town_df["transaction_volume"],
+                    name=town,
+                    hovertemplate="%{y} transactions",
+                ),
+                secondary_y=True,
+            )
 
     fig.update_xaxes(tickformat="%Y-%m")
+
+    fig.update_yaxes(
+        showgrid=False, zeroline=False, secondary_y=True, showticklabels=False
+    )
+
+    custom_layout = {}
+    if show_transaction_volumes:
+        custom_layout = dict(
+            yaxis=dict(
+                range=[
+                    chart_df["resale_price"].min() * 0.6,
+                    chart_df["resale_price"].max() * 1.2,
+                ]
+            ),
+            yaxis2=dict(range=[0, chart_df["transaction_volume"].max() * 15]),
+        )
+
     fig.update_layout(
         title="Median Resale Price by Town",
-        xaxis_title="Quarter",
-        yaxis_title="Resale Price",
+        yaxis_title="Median Resale Price",
         hovermode="x unified",
+        barmode="stack",
+        **custom_layout,
         **annotations,
-    )
-    fig.update_traces(
-        line_shape="spline",
-        hovertemplate="$%{y}",
     )
 
     st.plotly_chart(fig, use_container_width=True)

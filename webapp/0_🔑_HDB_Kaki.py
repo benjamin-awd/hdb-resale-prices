@@ -1,16 +1,19 @@
+# ruff:  noqa: E402
+import streamlit as st
+
+from webapp.logo import icon, logo
+
+st.set_page_config(page_title="HDB Kaki", page_icon=icon, layout="wide")
+
 from datetime import datetime
 
 import plotly.express as px
 import plotly.graph_objects as go
 import polars as pl
-import streamlit as st
 from plotly.subplots import make_subplots
 
 from webapp.filter import SidebarFilter
-from webapp.logo import icon, logo
 from webapp.read import get_last_updated_badge, load_dataframe
-
-st.set_page_config(page_title="HDB Kaki", page_icon=icon, layout="wide")
 
 st.image(logo, width=500)
 
@@ -22,30 +25,6 @@ st.markdown("## Resale Visualizations")
 st.markdown(
     "HDB Kaki helps you stay updated on the latest movements in the HDB resale market."
 )
-
-df = load_dataframe()
-
-
-def add_time_filters(df: pl.DataFrame):
-    df = df.with_columns(
-        pl.col("month").dt.quarter().alias("quarter"),
-        pl.col("month").dt.year().alias("year"),
-    )
-
-    df = df.with_columns(
-        (
-            pl.concat_str(
-                [
-                    pl.col("year").cast(str),
-                    pl.col("quarter")
-                    .cast(str)
-                    .map_elements(lambda x: f" Q{x}", return_dtype=str),
-                ]
-            ).alias("quarter_label")
-        )
-    )
-    return df
-
 
 group_by = st.radio(
     "Group by:",
@@ -71,13 +50,12 @@ annotations = dict(
 
 if group_by == "Lease Years":
     sf = SidebarFilter(
-        df,
         min_date=datetime.strptime("2017-01-01", "%Y-%m-%d").date(),
         select_towns=(True, "multi"),
         select_lease_years=False,
     )
 
-    chart_df = add_time_filters(sf.df)
+    chart_df = sf.df
     chart_df = (
         chart_df.group_by(["quarter_label", "cat_remaining_lease_years"])
         .agg(pl.median("resale_price").alias("median_resale_price"))
@@ -115,8 +93,7 @@ if group_by == "Lease Years":
 
 else:
     sf = SidebarFilter(
-        df,
-        min_date=df["month"].min(),
+        min_date=datetime.strptime("2017-01-01", "%Y-%m-%d").date(),
         select_towns=(True, "multi"),
         select_lease_years=False,
         default_town="ANG MO KIO",
@@ -125,7 +102,7 @@ else:
         "Show transaction volumes", value=False
     )
 
-    chart_df = add_time_filters(sf.df)
+    chart_df = sf.df
 
     chart_df = (
         chart_df.group_by(["quarter_label", "town"]).agg(
@@ -205,7 +182,7 @@ st.write(
 )
 st.download_button(
     "Download CSV",
-    df.sort(by="_id").write_csv(),
+    load_dataframe().write_csv(),
     "hdb_resale_data.csv",
     "text/csv",
     key="download-csv",

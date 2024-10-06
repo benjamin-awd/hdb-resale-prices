@@ -48,12 +48,33 @@ def get_dataframe_from_parquet() -> pl.DataFrame:
     return df.sort(by="town")
 
 
+def add_time_filters(df: pl.DataFrame):
+    df = df.with_columns(pl.col("month").str.strptime(pl.Date, "%Y-%m"))
+    df = df.with_columns(
+        pl.col("month").dt.quarter().alias("quarter"),
+        pl.col("month").dt.year().alias("year"),
+    )
+
+    df = df.with_columns(
+        (
+            pl.concat_str(
+                [
+                    pl.col("year").cast(str),
+                    pl.col("quarter")
+                    .cast(str)
+                    .map_elements(lambda x: f" Q{x}", return_dtype=str),
+                ]
+            ).alias("quarter_label")
+        )
+    )
+    return df
+
+
 @st.cache_data
 def load_dataframe() -> pl.DataFrame:
     """Wrapper for get_dataframe that provides a cache"""
     df = get_dataframe_from_parquet()
-    df = df.with_columns(pl.col("month").str.strptime(pl.Date, "%Y-%m"))
-
+    df = add_time_filters(df)
     return df
 
 

@@ -32,7 +32,6 @@ group_by = st.radio(
 )
 
 source = "Source: <a href='https://data.gov.sg/datasets/d_8b84c4ee58e3cfc0ece0d773c8ca6abc/view'>data.gov.sg</a>"
-
 annotations = dict(
     margin=dict(l=50, r=50, t=100, b=100),
     annotations=[
@@ -48,29 +47,25 @@ annotations = dict(
     height=500,
 )
 
-if group_by == "Lease Years":
-    sf = SidebarFilter(
-        min_date=datetime.strptime("2017-01-01", "%Y-%m-%d").date(),
-        select_towns=(True, "multi"),
-        select_lease_years=False,
-    )
 
-    chart_df = sf.df
+def plot_lease_years(sf: SidebarFilter):
+    """Plot percentage change in median resale price by lease years."""
     chart_df = (
-        chart_df.group_by(["quarter_label", "cat_remaining_lease_years"])
+        sf.df.group_by(["quarter_label", "cat_remaining_lease_years"])
         .agg(pl.median("resale_price").alias("median_resale_price"))
         .sort(["cat_remaining_lease_years", "quarter_label"])
-    )
-    chart_df = chart_df.with_columns(
-        (
+        .with_columns(
             (
-                pl.col("median_resale_price")
-                / pl.first("median_resale_price").over("cat_remaining_lease_years")
-                - 1
-            )
-            * 100
-        ).alias("percentage_change")
-    ).sort(by="quarter_label")
+                (
+                    pl.col("median_resale_price")
+                    / pl.first("median_resale_price").over("cat_remaining_lease_years")
+                    - 1
+                )
+                * 100
+            ).alias("percentage_change")
+        )
+        .sort(by="quarter_label")
+    )
 
     fig = px.line(
         chart_df,
@@ -87,35 +82,27 @@ if group_by == "Lease Years":
 
     fig.update_yaxes(ticksuffix="%")
     fig.update_traces(hovertemplate="%{y:.2f}%")
-
     fig.update_layout(hovermode="x unified", **annotations)
+
     st.plotly_chart(fig, use_container_width=True)
 
-else:
-    sf = SidebarFilter(
-        min_date=datetime.strptime("2017-01-01", "%Y-%m-%d").date(),
-        select_towns=(True, "multi"),
-        select_lease_years=False,
-        default_town="ANG MO KIO",
-    )
+
+def plot_town(sf: SidebarFilter):
+    """Plot median resale price and transaction volumes by town."""
     show_transaction_volumes = st.sidebar.checkbox(
         "Show transaction volumes", value=False
     )
 
-    chart_df = sf.df
-
     chart_df = (
-        chart_df.group_by(["quarter_label", "town"]).agg(
+        sf.df.group_by(["quarter_label", "town"])
+        .agg(
             pl.median("resale_price").alias("resale_price"),
             pl.count("resale_price").alias("transaction_volume"),
         )
-    ).sort(["town", "quarter_label"])
-
-    fig = make_subplots(
-        rows=1,
-        cols=1,
-        specs=[[{"secondary_y": True}]],
+        .sort(["town", "quarter_label"])
     )
+
+    fig = make_subplots(rows=1, cols=1, specs=[[{"secondary_y": True}]])
 
     for town in chart_df["town"].unique().sort():
         town_df = chart_df.filter(pl.col("town") == town)
@@ -144,22 +131,23 @@ else:
             )
 
     fig.update_xaxes(tickformat="%Y-%m")
-
     fig.update_yaxes(
         showgrid=False, zeroline=False, secondary_y=True, showticklabels=False
     )
 
-    custom_layout = {}
-    if show_transaction_volumes:
-        custom_layout = dict(
-            yaxis=dict(
-                range=[
-                    chart_df["resale_price"].min() * 0.6,
-                    chart_df["resale_price"].max() * 1.2,
-                ]
-            ),
-            yaxis2=dict(range=[0, chart_df["transaction_volume"].max() * 15]),
-        )
+    custom_layout = {
+        "yaxis": dict(
+            range=[
+                chart_df["resale_price"].min() * 0.6,
+                chart_df["resale_price"].max() * 1.2,
+            ]
+        ),
+        "yaxis2": (
+            dict(range=[0, chart_df["transaction_volume"].max() * 15])
+            if show_transaction_volumes
+            else {}
+        ),
+    }
 
     fig.update_layout(
         title="Median Resale Price by Town",
@@ -172,6 +160,18 @@ else:
 
     st.plotly_chart(fig, use_container_width=True)
 
+
+sf = SidebarFilter(
+    min_date=datetime.strptime("2017-01-01", "%Y-%m-%d").date(),
+    select_towns=(True, "multi"),
+    select_lease_years=False,
+    default_town="ANG MO KIO" if group_by == "Town" else None,
+)
+
+if group_by == "Lease Years":
+    plot_lease_years(sf)
+if group_by == "Town":
+    plot_town(sf)
 
 st.markdown("### Download")
 st.write(

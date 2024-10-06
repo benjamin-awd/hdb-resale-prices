@@ -2,6 +2,7 @@ from datetime import datetime
 from pathlib import Path
 
 import polars as pl
+import streamlit as st
 from pybadges import badge
 
 from webapp.utils import get_project_root
@@ -47,10 +48,13 @@ def get_dataframe_from_parquet() -> pl.DataFrame:
     return df.sort(by="town")
 
 
+@st.cache_data
 def load_dataframe() -> pl.DataFrame:
     """Wrapper for get_dataframe that provides a cache"""
     df = get_dataframe_from_parquet()
-    return df.with_columns(pl.col("month").str.strptime(pl.Date, "%Y-%m"))
+    df = df.with_columns(pl.col("month").str.strptime(pl.Date, "%Y-%m"))
+
+    return df
 
 
 schema = {

@@ -1,9 +1,7 @@
-import logging
-
 import folium
 import polars as pl
 import streamlit as st
-from folium.plugins import MarkerCluster
+from folium.plugins import FastMarkerCluster
 from PIL import Image
 from streamlit_folium import st_folium
 
@@ -25,6 +23,7 @@ st.write(
 
 # filter flat type
 sf = SidebarFilter(
+    select_towns=(True, "multi"),
     default_flat_type="4 ROOM",
 )
 
@@ -89,51 +88,86 @@ try:
         prefer_canvas=True,
     )
 
-    marker_cluster = MarkerCluster().add_to(sg_map)
+    callback = """
+        function(row) {
+            var lat = row[0];
+            var lng = row[1];
+            var address = row[2];
+            var month = row[3];
+            var level = row[4];
+            var price = row[5];
+            var lease = row[6];
+            var cat_resale_price = row[7];
+
+            var color = cat_resale_price === "Low" ? "green" :
+                        cat_resale_price === "Medium" ? "orange" : "red";
+
+            var html = `
+                <div style="font-family: 'Source Sans Pro', sans-serif; line-height: 1.5; padding: 3px;">
+                    <b style="font-size: 16px;">${address}</b>
+                    <p style="margin: 10px 0; font-size: 14px;">
+                        <span style="font-weight: bold;">Sold:</span> ${month}<br>
+                        <span style="font-weight: bold;">Storey:</span> ${level}<br>
+                        <span style="font-weight: bold;">Price:</span> $${price.toLocaleString()}<br>
+                        <span style="font-weight: bold;">Remaining Lease:</span> ${lease} years
+                    </p>
+                </div>
+            `;
+
+            var icon = L.AwesomeMarkers.icon({
+                icon: 'home',
+                markerColor: color,
+                prefix: 'fa'
+            });
+
+            var marker = L.marker(new L.LatLng(lat, lng), {icon: icon});
+            marker.bindPopup(html);
+            marker.bindTooltip(html, {sticky: true});
+            return marker;
+        }
+    """
+
+    if show_all:
+        filtered_data = filtered_sub
+    else:
+        latest_transactions = filtered_sub.group_by("address").agg(
+            pl.all().sort_by("month").last()
+        )
+        filtered_data = latest_transactions
+
+    filtered_data = filtered_data.with_columns(
+        [
+            pl.col("month").cast(pl.Utf8),
+        ]
+    )
+
+    data = (
+        filtered_data.select(
+            [
+                "latitude",
+                "longitude",
+                "address",
+                "month",
+                "storey_range",
+                "resale_price",
+                "remaining_lease_years",
+                "cat_resale_price",
+            ]
+        )
+        .to_numpy()
+        .tolist()
+    )
+    marker_cluster = FastMarkerCluster(
+        data,
+        callback=callback,
+        name="Resale Flats",
+    ).add_to(sg_map)
+
+    folium.LayerControl().add_to(sg_map)
 
     folium_object = sg_map
     if show_all:
         folium_object = marker_cluster
-
-    for month, lat, lon, address, town, price, lease, level, cat_resale_price in zip(
-        filtered_sub["month"],
-        filtered_sub["latitude"],
-        filtered_sub["longitude"],
-        filtered_sub["address"],
-        filtered_sub["town"],
-        filtered_sub["resale_price"],
-        filtered_sub["remaining_lease_years"],
-        filtered_sub["storey_range"],
-        filtered_sub["cat_resale_price"],
-    ):
-        price_rounded = "$" + str(round(price))
-        # pin colour
-        if cat_resale_price == "Low":
-            color = "green"
-        elif cat_resale_price == "Medium":
-            color = "orange"
-        elif cat_resale_price == "High":
-            color = "red"
-
-        html = f"""
-            <div style="font-family: 'Source Sans Pro', sans-serif; line-height: 1.5; padding: 3px;">
-                <b style="font-size: 16px;">{address}</b>
-                <p style="margin: 10px 0; font-size: 14px;">
-                    <span style="font-weight: bold;">Sold:</span> {month}<br>
-                    <span style="font-weight: bold;">Storey:</span> {level}<br>
-                    <span style="font-weight: bold;">Price:</span> ${round(price):,}</span><br>
-                    <span style="font-weight: bold;">Remaining Lease:</span> {lease} years
-                </p>
-            </div>
-        """
-
-        popup = folium.Popup(html, max_width=170)
-        folium.Marker(
-            [lat, lon],
-            popup=popup,
-            icon=folium.Icon(color=color, icon="home", prefix="fa"),
-            tooltip=html,
-        ).add_to(folium_object)
 
     sw = (
         filtered.select([pl.col("latitude").min(), pl.col("longitude").min()])
@@ -158,8 +192,7 @@ try:
     st_data = st_folium(sg_map, use_container_width=True, returned_objects=[])
 
 except TypeError as error:
-    logging.debug(error)
-    st.warning("No data found for this combination of settings")
+    st.warning(f"No data found for this combination of settings: {error}")
 
 
 def convert_df(df: pl.DataFrame):

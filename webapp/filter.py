@@ -8,7 +8,7 @@ from webapp.read import load_dataframe
 class SidebarFilter:
     def __init__(
         self,
-        df: pl.DataFrame = load_dataframe(),
+        df: pl.DataFrame = None,
         min_date=None,
         max_date=None,
         select_flat_type=True,
@@ -17,6 +17,8 @@ class SidebarFilter:
         default_flat_type="ALL",
         default_town=None,
     ):
+        if not df:
+            df = load_dataframe()
         self.df = df
         self.min_date = min_date or self.df["month"].max() - relativedelta(months=12)
         self.max_date = max_date or self.df["month"].max()

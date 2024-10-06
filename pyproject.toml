@@ -11,7 +11,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
 pandas = "^2.2.2"
-streamlit = {path = "./build/streamlit-1.38.0.tar.gz"}
+streamlit = {path = "./build/streamlit-1.39.0.tar.gz"}
 folium = "^0.17.0"
 altair = "^5.4.1"
 streamlit-folium = "^0.22.0"

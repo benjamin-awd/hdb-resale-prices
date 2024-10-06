@@ -155,7 +155,7 @@ try:
 
     st.image(image)
 
-    st_data = st_folium(sg_map, use_container_width=True)
+    st_data = st_folium(sg_map, use_container_width=True, returned_objects=[])
 
 except TypeError as error:
     logging.debug(error)
